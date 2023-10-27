@@ -2,6 +2,9 @@
   <img src="https://github.com/vTuanpham/Large_dataset_translator/assets/82665400/e424f17d-1c9e-4c72-90d2-9ef77c3b9dd2" width="100" height="100">
 </p>
 
+* Running test on colab: 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1OEni8c9N9C_9Kf3ySt87goN7HDvRN3nw?usp=sharing)
+
 # Large dataset translator 
   * ## Translating any large dataset to any language with the fraction of the time
     * Spliting large dataset into chunks and running translation in parallel via multithread processing
@@ -46,7 +49,8 @@
     ```sh
     python examples/YahmaAlpaca/AlpacaCleaned_Parser.py
     ```
-    ##### Running test on colab
+    ##### Running test on colab [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1OEni8c9N9C_9Kf3ySt87goN7HDvRN3nw?usp=sharing)
+
     ```sh
     %run examples/YahmaAlpaca/AlpacaCleaned_Parser.py
     ```
