@@ -1,6 +1,5 @@
 import json
 import os
-import logging
 import random
 import sys
 import string
@@ -25,22 +24,6 @@ from googletrans import Translator
 from configs import BaseConfig
 from .utils import force_super_call, ForceBaseCallMeta, timeit
 from .filters import have_code
-
-
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s')
-
-stdout_handler = logging.StreamHandler(sys.stdout)
-stdout_handler.setLevel(logging.DEBUG)
-stdout_handler.setFormatter(formatter)
-
-file_handler = logging.FileHandler('logs.log')
-file_handler.setLevel(logging.DEBUG)
-file_handler.setFormatter(formatter)
-
-logger.addHandler(file_handler)
-logger.addHandler(stdout_handler)
 
 
 class DataParser(metaclass=ForceBaseCallMeta):
@@ -86,7 +69,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
         dict_fields = dataclass.get_keys()
         for key in dict_fields:
             assert key in keys, f"\n Invalid parser, the key '{key}' is missing from {dict_fields}\n" \
-                                f"you can adjust the fields in the 'src/data/configs/'" \
+                                f"you can adjust the fields in the 'configs/base_config.py'" \
                                 f"  or fill in the missing field"
         return True
 
@@ -96,18 +79,19 @@ class DataParser(metaclass=ForceBaseCallMeta):
         for idx, example in enumerate(tqdm(self.converted_data, desc="Validating data for translation:")):
             for key in self.target_fields:
                 if self.no_translated_code:
+                    example_filters = 0
                     contain_code, score, found_elements = have_code(example[key])
                     if contain_code:
-                        logger.warning(f"Example {idx} with ID: {example['qas_id']} contain code with score {score},"
-                                       " This example will not be included in the translation data.\n"
-                                       f"Detected word: {found_elements}")
+                        example_filters += 1
+                        if len(self.converted_data) - 1 == idx:
+                            print(f"Number of example with code: {example_filters}")
                         break
                     elif key == self.target_fields[-1]:
                         validated_translate_data.append(example)
                 else:
                     if key == self.target_fields[-1]: validated_translate_data.append(example)
 
-        print(f"Total data left after filtering for translation: {len(validated_translate_data)}")
+        print(f"\nTotal data left after filtering for translation: {len(validated_translate_data)}\n")
         self.converted_data = validated_translate_data
 
     @staticmethod
@@ -164,7 +148,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
             num_large_chunks = len(converted_data) / self.large_chunks_threshold
             large_chunks = [converted_data[x:x + self.large_chunks_threshold] for x in
                             range(0, len(converted_data), self.large_chunks_threshold)]
-            print(f" Data is way too large, spliting data into {num_large_chunks} large chunk for sequential translation")
+            print(f"\n Data is way too large, spliting data into {num_large_chunks} large chunk for sequential translation\n")
 
             for idx, large_chunk in enumerate(tqdm(large_chunks, desc=f"Translating large chunk ", colour="red")):
                 print(f" Processing large chunk No: {idx}")
@@ -176,8 +160,8 @@ class DataParser(metaclass=ForceBaseCallMeta):
             num_threads = len(converted_data) / self.max_example_per_thread
             chunks = [converted_data[x:x + self.max_example_per_thread] for x in
                       range(0, len(converted_data), self.max_example_per_thread)]
-            print(f" Data too large, splitting data into {num_threads} chunk, each chunk is {len(chunks[0])}"
-                  f" Processing with multithread...")
+            print(f"\n Data too large, splitting data into {num_threads} chunk, each chunk is {len(chunks[0])}"
+                  f" Processing with multithread...\n")
             with ThreadPoolExecutor(max_workers=num_threads) as executor:
                 futures = []
                 finished_task = 0
@@ -192,9 +176,9 @@ class DataParser(metaclass=ForceBaseCallMeta):
                         with lock:
                             translated_data += future.result()
                             finished_task += 1
-                            print("Task finished, adding translated data to result")
+                            print("\nTask finished, adding translated data to result\n")
                     else:
-                        print(f"Task failed, \nrestarting thread when others finished")
+                        print(f"\nTask failed, \nrestarting thread when others finished\n")
                         pass
 
                 for idx, chunk in enumerate(chunks):
@@ -218,7 +202,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
                         # If exception occurs in one of the thread, restart the thread with its specific chunk
                         if future_dict['future'].exception():
                             print(
-                                f" Thread {future_dict['idx']} failed, restarting thread with chunk {future_dict['idx']}")
+                                f"\n Thread {future_dict['idx']} failed, restarting thread with chunk {future_dict['idx']}\n")
                             backup_future_chunk = executor.submit(self.translate_converted, chunks[future_dict['idx']],
                                                                   f"Backup chunk {future_dict['idx']}", Translator())
                             backup_future_chunk.add_done_callback(callback_done)
@@ -250,7 +234,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
             if not desc:
                 raise f" Connection timeout, please provide better connection"
             else:
-                print(f" Connection timeout from thread {desc}")
+                print(f"\n Connection timeout from thread {desc}\n")
                 raise f" Connection timeout raise from thread {desc}"
 
     @abstractmethod
