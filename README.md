@@ -11,6 +11,7 @@
 
  * ## Setup
      #### Have python 3.8 or above
+     ##### Setup on local machine
      ```sh
      git clone https://github.com/vTuanpham/Large_dataset_translator.git
      
@@ -25,10 +26,25 @@
      # Install package into env
      pip install -r requirements.txt
      ```
+
+     ##### Setup on colab
+     ```sh
+     !git clone https://github.com/vTuanpham/Large_dataset_translator.git
+     
+     %cd Large_dataset_translator
+  
+     # Install package into env
+     %pip install -r requirements.txt
+     ```
   * ## Test
     #### This should take about 10-20mins on local or 5-10mins on colab
+    ##### Running test on local machine
     ```sh
     python examples/YahmaAlpaca/AlpacaCleaned_Parser.py
+    ```
+    ##### Running test on colab
+    ```sh
+    %run examples/YahmaAlpaca/AlpacaCleaned_Parser.py
     ```
     * Be sure to check the output in the examples/YahmaAlpaca dir, there should be an english version and a korea version
     * If all things go well, you should have your own dataset translated !
@@ -50,7 +66,7 @@
     * Set no_translated_code=True to enable no string that might contain code to be translated
     * Set target_lang to the correct language that you want to be translated
     * Set source_lang if the source dataset is not in english
-      * Here the list of available languages:
+      * Here is the list of all available languages:
         
           <table>
             <tr>
