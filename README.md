@@ -118,10 +118,6 @@
               <td>et</td>
             </tr>
             <tr>
-              <td>Filipino</td>
-              <td>fil</td>
-            </tr>
-            <tr>
               <td>Finnish</td>
               <td>fi</td>
             </tr>
