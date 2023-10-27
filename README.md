@@ -81,6 +81,33 @@
     * Set no_translated_code=True to enable no string that might contain code to be translated
     * Set target_lang to the correct language that you want to be translated
     * Set source_lang if the source dataset is not in english
+      
+    * Be sure your converted data from convert function you implemented must have the following fields:
+      ```python
+      @dataclass
+      class BaseConfig:
+          """
+          A single training/test example for base config.
+          """
+          qas_id: str
+          system_prompt: str
+      
+          question_text: str
+      
+          orig_answer_texts: str = None
+          answer_lengths: int = None
+      ```
+      ```sh
+      {
+       "system_prompt": "",
+       "qas_id": "VA4KDG",
+       "question_text": "Give three tips for staying healthy. ",
+       "orig_answer_texts": "1. Eat a balanced and nutritious diet: Make sure your meals are inclusive of a variety of fruits and vegetables, lean protein, whole grains, and healthy fats. This helps to provide your body with the essential nutrients to function at its best and can help prevent chronic diseases.\n\n2. Engage in regular physical activity: Exercise is crucial for maintaining strong bones, muscles, and cardiovascular health. Aim for at least 150 minutes of moderate aerobic exercise or 75 minutes of vigorous exercise each week.\n\n3. Get enough sleep: Getting enough quality sleep is crucial for physical and mental well-being. It helps to regulate mood, improve cognitive function, and supports healthy growth and immune function. Aim for 7-9 hours of sleep each night.",
+       "answer_lengths": null
+      }
+      ```
+      Or you can create a new Config dataclass and replace all instance of BaseConfig :D
+      * Note: Each example must be a dict 
 * ## Here is the list of all available languages:
 
   <table>
