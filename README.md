@@ -63,7 +63,7 @@
     ```
     * Be sure to check the output in the examples/YahmaAlpaca dir, there should be an english version and a Vietnamese version
     * If all things go well, you should have your own dataset translated !
-    * yahma/alpaca-cleaned datasets on huggingface-hub is 51.8k rows of data
+    * yahma/alpaca-cleaned datasets on huggingface-hub has 51.8k rows of data
     * Don't recommend ctrl+C in the middle of translation
 * ## Remember to leave a star 🌞 if the test was successful :)
     ## Translate your own dataset
