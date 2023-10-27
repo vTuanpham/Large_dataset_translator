@@ -18,7 +18,7 @@ class AlpacaCleaned(DataParser):
                          parser_name=PARSER_NAME,
                          do_translate=True,
                          no_translated_code=True,
-                         target_lang="th")
+                         target_lang="vi")
         # The data config to be validated to check if self implement "convert" function is correct or not
         self.target_config = BaseConfig
 
