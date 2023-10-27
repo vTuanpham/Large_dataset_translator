@@ -1,13 +1,17 @@
-# Large dataset translator
- * ## Translating any large dataset to any language with the fraction of the time
-   * Spliting large dataset into chunks and running translation in parallel via multithread processing
-   * Any thread that fail will restart automatically with its specific chunk until all data point is fully translated
-   * Convert into the same format that is support by pyarrow and huggingface-datasets
-   * Filters can be use post translation like remove example that might contain code
-     (Code example that have variable, function name,... will be translated by google)
-   * Automatically download the converted dataset and the translated dataset if you're on colab upon finished
-   * Unlimited translation, no api key required
- * ### Dataset like ELI5, OpenOcra that have over 100k examples that will take up more than a 1000 hours on a single thread can be translate in under 2 hours 
+<p align="center">
+  <img src="https://github.com/vTuanpham/Large_dataset_translator/assets/82665400/e424f17d-1c9e-4c72-90d2-9ef77c3b9dd2" width="100" height="100">
+</p>
+
+# Large dataset translator 
+  * ## Translating any large dataset to any language with the fraction of the time
+    * Spliting large dataset into chunks and running translation in parallel via multithread processing
+    * Any thread that fail will restart automatically with its specific chunk until all data point is fully translated
+    * Convert into the same format that is support by pyarrow and huggingface-datasets
+    * Filters can be use post translation like remove example that might contain code
+      (Code example that have variable, function name,... will be translated by google)
+    * Automatically download the converted dataset and the translated dataset if you're on colab upon finished
+    * Unlimited translation, no api key required
+  * ### Dataset like ELI5, OpenOcra that have over 100k examples that will take up more than a 1000 hours on a single thread can be translate in under 2 hours 
 
  * ## Setup
      #### Have python 3.8 or above
