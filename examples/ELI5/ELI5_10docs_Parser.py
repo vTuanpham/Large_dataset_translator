@@ -15,7 +15,8 @@ class ELI5Val(DataParser):
     def __init__(self, file_path: str, output_path: str):
         super().__init__(file_path, output_path,
                          parser_name=PARSER_NAME,
-                         do_translate=True)
+                         do_translate=True,
+                         target_lang="ja")
         self.max_ctxs = 5
         # The data config to be validated to check if self implement "convert" function is correct or not
         self.target_config = BaseConfig
