@@ -16,6 +16,7 @@
 ![Test translation eli5 german](https://github.com/vTuanpham/Large_dataset_translator/actions/workflows/test_translate.yml/badge.svg?event=push)
 
 
+### Here's the DataParser class in action, 1507 rows translated to Korean in under 2 minutes
 ![Translation demo](assets/Translate_demo.gif)
 
 * ## Translating any large dataset to any language with the fraction of the time
