@@ -39,6 +39,11 @@ class DataParser(metaclass=ForceBaseCallMeta):
                  source_lang: str = "en",
                  target_lang: str = "vi",
                  ) -> None:
+
+        # TODO: Fix weird bug where if a chunk only has a single thread,
+        #  only examples in that thread is saved. For now, adjust the max_example_per_thread
+        #  and the large_chunks_threshold args so that the last chunk cannot contain a single thread
+
         self.data_read = None
         self.converted_data = None
         self.file_path = file_path

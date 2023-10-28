@@ -120,7 +120,10 @@ class ELI5Val(DataParser):
 
 if __name__ == '__main__':
     eli5_val_parser = ELI5Val(r"examples/ELI5/ELI5_val_10_doc.json",
-                              r"examples/ELI5")
+                              r"examples/ELI5",
+                              max_example_per_thread=100,
+                              large_chunks_threshold=1000,
+                              target_lang="ko")
     eli5_val_parser.read()
     eli5_val_parser.convert()
     eli5_val_parser.save
