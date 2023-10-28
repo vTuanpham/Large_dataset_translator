@@ -2,9 +2,18 @@
   <img src="https://github.com/vTuanpham/Large_dataset_translator/assets/82665400/e424f17d-1c9e-4c72-90d2-9ef77c3b9dd2" width="100" height="100">
 </p>
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1OEni8c9N9C_9Kf3ySt87goN7HDvRN3nw?usp=sharing)
-# Large dataset translator 
-  * ## Translating any large dataset to any language with the fraction of the time
+
+<div align="center">
+  <h1>Large dataset translator</h1>
+</div>
+
+<p align="center">
+  <a href="https://colab.research.google.com/drive/1OEni8c9N9C_9Kf3ySt87goN7HDvRN3nw?usp=sharing">
+    <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab">
+  </a>
+</p>
+
+* ## Translating any large dataset to any language with the fraction of the time
     * Spliting large dataset into chunks and running translation in parallel via multithread processing
     * Any thread that fail will restart automatically with its specific chunk until all data point is fully translated
     * Convert into the same format that is support by pyarrow and huggingface-datasets
@@ -13,7 +22,7 @@
         (Code example that have variable, function name,... will be translated by google)
     * Automatically download the converted dataset and the translated dataset if you're on colab upon finished
     * Unlimited translation, no api key required
-  * ### Dataset like ELI5, OpenOcra that have over 100k examples that will take up more than a 1000 hours on a single thread can be translate in under 2 hours 
+* ### Dataset like ELI5, OpenOcra that have over 100k examples that will take up more than a 1000 hours on a single thread can be translate in under 2 hours 
 
  * ## Setup
      #### Have python 3.8 or above
@@ -54,7 +63,7 @@
     ```
     * Be sure to check the output in the examples/YahmaAlpaca dir, there should be an english version and a Vietnamese version
     * If all things go well, you should have your own dataset translated !
-    * yahma/alpaca-cleaned datasets on huggingface-hub is 51.8k rows of data
+    * yahma/alpaca-cleaned datasets on huggingface-hub has 51.8k rows of data
     * Don't recommend ctrl+C in the middle of translation
 * ## Remember to leave a star 🌞 if the test was successful :)
     ## Translate your own dataset
@@ -72,6 +81,33 @@
     * Set no_translated_code=True to enable no string that might contain code to be translated
     * Set target_lang to the correct language that you want to be translated
     * Set source_lang if the source dataset is not in english
+      
+    * Be sure your converted data from convert function you implemented must have the following fields:
+      ```python
+      @dataclass
+      class BaseConfig:
+          """
+          A single training/test example for base config.
+          """
+          qas_id: str
+          system_prompt: str
+      
+          question_text: str
+      
+          orig_answer_texts: str = None
+          answer_lengths: int = None
+      ```
+      ```sh
+      {
+       "system_prompt": "",
+       "qas_id": "VA4KDG",
+       "question_text": "Give three tips for staying healthy. ",
+       "orig_answer_texts": "1. Eat a balanced and nutritious diet: Make sure your meals are inclusive of a variety of fruits and vegetables, lean protein, whole grains, and healthy fats. This helps to provide your body with the essential nutrients to function at its best and can help prevent chronic diseases.\n\n2. Engage in regular physical activity: Exercise is crucial for maintaining strong bones, muscles, and cardiovascular health. Aim for at least 150 minutes of moderate aerobic exercise or 75 minutes of vigorous exercise each week.\n\n3. Get enough sleep: Getting enough quality sleep is crucial for physical and mental well-being. It helps to regulate mood, improve cognitive function, and supports healthy growth and immune function. Aim for 7-9 hours of sleep each night.",
+       "answer_lengths": null
+      }
+      ```
+      Or you can create a new Config dataclass and replace all instance of BaseConfig :D
+      * Note: Each example must be a dict 
 * ## Here is the list of all available languages:
 
   <table>
