@@ -1,0 +1,29 @@
+name: Unit Tests
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check Out Code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8  # Specify your desired Python version
+
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt  # Replace with the path to your requirements file
+        working-directory: ./
+
+      - name: Run Unit Tests
+        run: |
+          python -m unittest discover -s tests -p "*_test.py"  # Adjust this command based on your code structure
+        working-directory: ./
