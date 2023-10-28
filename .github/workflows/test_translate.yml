@@ -7,6 +7,11 @@ on:
       - dev
     paths:
       - '!README.md'
+      - configs/**.py
+      - examples/
+      - tests/
+      - translator/
+      - requirements.txt
 
 jobs:
   test:
