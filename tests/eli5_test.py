@@ -15,6 +15,7 @@ class TestELI5Val(unittest.TestCase):
     def step2(self):
         self.parser.read()
         self.assertIsNotNone(self.parser.data_read)  # Check that data_read is not None
+        raise "Test fail for github action badge"
 
     def step3(self):
         self.parser.convert()
