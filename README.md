@@ -30,47 +30,47 @@
     * Unlimited translation, no api key required
 * ### Dataset like ELI5, OpenOcra that have over 100k examples that will take up more than a 1000 hours on a single thread can be translate in under 2 hours 
 
- * ## Setup
-     #### Have python 3.8 or above
-     ##### Setup on local machine
-     ```sh
-     git clone https://github.com/vTuanpham/Large_dataset_translator.git
-     
-     cd Large_dataset_translator
-  
-     # setup virtual env
-     virtualenv trans-env
-  
-     # Activate virtual env
-     source trans-env/bin/activate
-  
-     # Install package into virtual env
-     pip install -r requirements.txt
-     ```
-
-     ##### Setup on colab
-     ```sh
-     !git clone https://github.com/vTuanpham/Large_dataset_translator.git
-     
-     %cd Large_dataset_translator
-  
-     %pip install -r requirements.txt
-     ```
-  * ## Test
-    #### This should take about 10-20mins on local or 5-10mins on colab
-    ##### Running test on local machine
+* ## Setup
+    #### Have python 3.8 or above
+    ##### Setup on local machine
     ```sh
-    python examples/YahmaAlpaca/AlpacaCleaned_Parser.py
+    git clone https://github.com/vTuanpham/Large_dataset_translator.git
+     
+    cd Large_dataset_translator
+  
+    # setup virtual env
+    virtualenv trans-env
+  
+    # Activate virtual env
+    source trans-env/bin/activate
+  
+    # Install package into virtual env
+    pip install -r requirements.txt
     ```
-    ##### Running test on colab [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1OEni8c9N9C_9Kf3ySt87goN7HDvRN3nw?usp=sharing)
 
+    ##### Setup on colab
     ```sh
-    %run examples/YahmaAlpaca/AlpacaCleaned_Parser.py
+    !git clone https://github.com/vTuanpham/Large_dataset_translator.git
+     
+    %cd Large_dataset_translator
+  
+    %pip install -r requirements.txt
     ```
-    * Be sure to check the output in the examples/YahmaAlpaca dir, there should be an english version and a Vietnamese version
-    * If all things go well, you should have your own dataset translated !
-    * yahma/alpaca-cleaned datasets on huggingface-hub has 51.8k rows of data
-    * Don't recommend ctrl+C in the middle of translation
+* ## Test
+  #### This should take about 10-20mins on local or 5-10mins on colab
+  ##### Running test on local machine
+  ```sh
+  python examples/YahmaAlpaca/AlpacaCleaned_Parser.py
+  ```
+  ##### Running test on colab [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1OEni8c9N9C_9Kf3ySt87goN7HDvRN3nw?usp=sharing)
+
+  ```sh
+  %run examples/YahmaAlpaca/AlpacaCleaned_Parser.py
+  ```
+  * Be sure to check the output in the examples/YahmaAlpaca dir, there should be an english version and a Vietnamese version
+  * If all things go well, you should have your own dataset translated !
+  * yahma/alpaca-cleaned datasets on huggingface-hub has 51.8k rows of data
+  * Don't recommend ctrl+C in the middle of translation
 * ## Remember to leave a star 🌞 if the test was successful :)
     ## Translate your own dataset
     * #### Look through all the examples in the examples/ dir first !
@@ -342,4 +342,11 @@
               <td>cy</td>
             </tr>
           </table>
+
+* Known issues: 
+  * 'TypeError: "NoneType' object is not iterable"
+     This issue is relevant to gender specific translation, you can read more here https://github.com/ssut/py-googletrans/issues/260
+  * Weird bug where if a chunk only has a single thread,
+  only examples in that thread is saved. For now, adjust the ***max_example_per_thread***
+  and the ***large_chunks_threshold*** args so that the last chunk cannot contain a single thread
 
