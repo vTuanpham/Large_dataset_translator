@@ -183,7 +183,8 @@ class DataParser(metaclass=ForceBaseCallMeta):
                             finished_task += 1
                             print("\nTask finished, adding translated data to result\n")
                     else:
-                        print(f"\nTask failed, \nrestarting thread when others finished\n")
+                        print(f"\nTask failed with the following error: {future.exception()}"
+                              f"\nrestarting thread when others finished\n")
                         pass
 
                 for idx, chunk in enumerate(chunks):
