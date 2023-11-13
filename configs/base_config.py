@@ -1,9 +1,6 @@
-import json
 import sys
-import random
 sys.path.insert(0,r'./')
 import pprint
-from pprint import PrettyPrinter
 from typing import List, Dict
 from dataclasses import dataclass, field, asdict, fields
 
@@ -20,8 +17,6 @@ class BaseConfig:
 
     orig_answer_texts: str = None
     answer_lengths: int = None
-
-    # example_template = QA_TEMPLATE()
 
     def __post_init__(self) -> None:
         # Post validate

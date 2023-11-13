@@ -242,12 +242,12 @@ class DataParser(metaclass=ForceBaseCallMeta):
                 translated_data.append(translated_data_example)
             if en_data: return translated_data
             self.converted_data_translated = translated_data
-        except ConnectTimeout:
+        except ConnectTimeout as e:
             if not desc:
-                raise f" Connection timeout, please provide better connection"
+                raise ConnectTimeout(f" Connection timeout, please provide better connection")
             else:
-                tqdm.write(f"\n Connection timeout from thread {desc}\n")
-                raise f" Connection timeout raise from thread {desc}"
+                tqdm.write(f"\n Connection timeout from thread {desc}\n, please provide better connection")
+                raise ConnectTimeout(f" Connection timeout raise from thread {desc}\n, please provide better connection")
 
     @abstractmethod
     @force_super_call
