@@ -32,7 +32,7 @@ class TestELI5Val(unittest.TestCase):
 
     def step5(self):
         try:
-            self.translated_dataset = load_dataset("json", self.output_path, keep_in_memory=False)
+            self.translated_dataset = load_dataset("json", data_files=self.output_path, keep_in_memory=False)
         except Exception as e:
             raise SyntaxError("Invalid syntax for save function, the data output must be in the form of"
                               f"line-delimited json,\n Error message: {e}")
