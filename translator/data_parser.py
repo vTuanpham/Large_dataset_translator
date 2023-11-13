@@ -105,7 +105,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
 
     def translate_en2vi_advance_qa(self, example: Dict, translator: Translator = None) -> Dict:
         assert self.do_translate, "Please enable translate via self.do_translate"
-        keys = BaseConfig.get_keys()
+        keys = self.target_config.get_keys()
         for key in keys:
             if key in self.target_fields:
                 type = "str" if isinstance(example[key], str) else "list"
