@@ -1,6 +1,9 @@
 import os
 import unittest
 import warnings
+
+from datasets import load_dataset
+
 from examples.ELI5.ELI5_10docs_Parser import ELI5Val
 
 
@@ -28,6 +31,17 @@ class TestELI5Val(unittest.TestCase):
         self.assertTrue(os.path.exists(self.output_path), f"File '{self.output_path}' does not exist")
 
     def step5(self):
+        try:
+            self.translated_dataset = load_dataset("json", self.output_path, keep_in_memory=False)
+        except Exception as e:
+            raise SyntaxError("Invalid syntax for save function, the data output must be in the form of"
+                              f"line-delimited json,\n Error message: {e}")
+
+    def step6(self):
+        self.assertEqual(len(self.translated_dataset['train']), len(self.parser.converted_data),
+                         "The parsed translated dataset does not match the length of the parsed dataset")
+
+    def step7(self):
         if os.path.exists(self.output_path):
             os.remove(self.output_path)
 
