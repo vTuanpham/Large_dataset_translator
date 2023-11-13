@@ -84,7 +84,7 @@ class MathInstruct(DataParser):
                 data_dict['answer_lengths'] = None
                 data_converted.append(data_dict)
 
-        self.converted_data = data_converted[20000:22000]
+        self.converted_data = data_converted[20000:120000]
 
         pass
 
