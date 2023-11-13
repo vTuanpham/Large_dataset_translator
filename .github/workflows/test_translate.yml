@@ -20,10 +20,10 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install -r requirements.txt  # Replace with the path to your requirements file
+          pip install -r requirements.txt
         working-directory: ./
 
       - name: Run Unit Tests
         run: |
-          python -m unittest discover -s tests -p "*_test.py"  # Adjust this command based on your code structure
+          python -m unittest discover -s tests -p "*_test.py"
         working-directory: ./

@@ -20,8 +20,8 @@ class ELI5ValQAConfig(DataParser):
                          target_lang=target_lang,
                          max_example_per_thread=max_example_per_thread,
                          large_chunks_threshold=large_chunks_threshold)
-        self.max_ctxs = 5
-        self.max_answers = 3
+        self.max_ctxs = 3
+        self.max_answers = 2
         # The data config to be validated to check if self implement "convert" function is correct or not
         self.target_config = QAConfig
 
@@ -124,7 +124,7 @@ if __name__ == '__main__':
                                                 r"examples/ELI5",
                                                 max_example_per_thread=100,
                                                 large_chunks_threshold=1000,
-                                                target_lang="ko")
+                                                target_lang="ru")
     eli5_val_qa_config_parser.read()
     eli5_val_qa_config_parser.convert()
     eli5_val_qa_config_parser.save
