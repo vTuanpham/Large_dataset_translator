@@ -13,7 +13,7 @@ class TestELI5Val(unittest.TestCase):
         self.file_path = "examples/ELI5/ELI5_val_10_doc.json"
         self.output_dir = "examples/ELI5"
         self.parser = ELI5Val(self.file_path, self.output_dir, target_lang="de",
-                              max_example_per_thread=100, large_chunks_threshold=800)
+                              max_example_per_thread=50, large_chunks_threshold=500)
 
     def step2(self):
         self.parser.read()

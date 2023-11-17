@@ -40,10 +40,6 @@ class DataParser(metaclass=ForceBaseCallMeta):
                  target_lang: str = "vi",
                  ) -> None:
 
-        # TODO: Fix weird bug where if a chunk only has a single thread,
-        #  only examples in that thread is saved. For now, adjust the max_example_per_thread
-        #  and the large_chunks_threshold args so that the last chunk cannot contain a single thread
-
         self.data_read = None
         self.converted_data = None
         self.file_path = file_path
@@ -187,13 +183,14 @@ class DataParser(metaclass=ForceBaseCallMeta):
                         with lock:
                             translated_data += future.result()
                             finished_task += 1
-                            tqdm.write("\nTask finished, adding translated data to result...")
+                            tqdm.write("\nTask finished, adding translated data to result...\n")
                     else:
                         tqdm.write(f"\nTask failed with the following error: {future.exception()}."
                                    f"\nRestarting thread when others finished\n")
                         pass
 
                 for idx, chunk in enumerate(chunks):
+                    # Assign each thread with a new Translator instance
                     future_chunk = executor.submit(self.translate_converted, chunk, f"chunk {idx}", Translator())
                     future_chunk.add_done_callback(callback_done)
                     future_dict = {
@@ -241,7 +238,12 @@ class DataParser(metaclass=ForceBaseCallMeta):
                 translated_data_example = self.translate_en2vi_advance_qa(example, translator)
                 translated_data.append(translated_data_example)
             if en_data: return translated_data
-            self.converted_data_translated = translated_data
+            if large_chunk:
+                # Assuming that the previous large chunk process already create self.converted_data_translated
+                # This cover the case where last large chunk only contain a single thread
+                self.converted_data_translated += translated_data
+            else:
+                self.converted_data_translated = translated_data
         except ConnectTimeout as e:
             if not desc:
                 raise ConnectTimeout(f" Connection timeout, please provide better connection")

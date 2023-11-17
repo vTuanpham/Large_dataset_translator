@@ -346,7 +346,5 @@
 * Known issues: 
   * 'TypeError: "NoneType' object is not iterable"
      This issue is relevant to gender specific translation, you can read more here https://github.com/ssut/py-googletrans/issues/260
-  * Weird bug where if a chunk only has a single thread,
-  only examples in that thread is saved. For now, adjust the ***max_example_per_thread***
-  and the ***large_chunks_threshold*** args so that the last chunk cannot contain a single thread
+
 
