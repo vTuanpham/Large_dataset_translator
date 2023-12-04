@@ -17,7 +17,9 @@ class OpenOrcaParser(DataParser):
                          parser_name=PARSER_NAME,
                          do_translate=True,
                          no_translated_code=True)
-        # The data config to be validated to check if self implement "convert" function is correct or not
+
+        # The data config to be validated to check if self implement "convert" function is correct or not,
+        # you must map the data form to the correct fields of the @dataclass in the configs/base_config.py
         self.target_config = BaseConfig
 
         # The data fields to be translated (The fields belong to BaseConfig)
@@ -25,13 +27,19 @@ class OpenOrcaParser(DataParser):
 
     # Read function must assign data that has been read to self.data_read
     def read(self) -> None:
+        # The read function must call the read function in DataParser class
+        # I just want to be sure that the file path is correct
         super(OpenOrcaParser, self).read()
+
+        # OpenOcra is pretty large, so adjust accordingly
         self.data_read = load_dataset("Open-Orca/OpenOrca")
 
         return None
 
     # Convert function must assign data that has been converted to self.converted_data
     def convert(self) -> None:
+        # The convert function must call the convert function in DataParser class
+        # I just want to be sure the read function has actually assigned the self.data_read
         super(OpenOrcaParser, self).convert()
 
         data_converted = []
@@ -46,6 +54,7 @@ class OpenOrcaParser(DataParser):
                 data_dict['answer_lengths'] = None
                 data_converted.append(data_dict)
 
+        # Be sure to assign the final data list to self.converted_data
         self.converted_data = data_converted
 
         return None

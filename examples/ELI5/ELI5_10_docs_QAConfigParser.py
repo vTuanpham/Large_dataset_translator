@@ -12,6 +12,9 @@ PARSER_NAME = "ELI5_val_QAConfig"
 
 
 class ELI5ValQAConfig(DataParser):
+    # QAconfig contain list fields also, these fields will be translated in bulk(batch)
+    # so might take longer than usual, try to map to the base_config first to reduce overhead,
+    # QAconfig is for lfqa-type dataset
     def __init__(self, file_path: str, output_path: str, target_lang: str="vi",
                  max_example_per_thread=400, large_chunks_threshold=20000):
         super().__init__(file_path, output_path,
@@ -22,7 +25,9 @@ class ELI5ValQAConfig(DataParser):
                          large_chunks_threshold=large_chunks_threshold)
         self.max_ctxs = 3
         self.max_answers = 2
-        # The data config to be validated to check if self implement "convert" function is correct or not
+
+        # The data config to be validated to check if self implement "convert" function is correct or not,
+        # you must map the data form to the correct fields of the @dataclass in the configs/qa_config.py
         self.target_config = QAConfig
 
         # The data fields to be translated (The fields belong to QAConfig)
@@ -30,7 +35,10 @@ class ELI5ValQAConfig(DataParser):
 
     # Read function must assign data that has been read to self.data_read
     def read(self) -> None:
+        # The read function must call the read function in DataParser class
+        # I just want to be sure that the file path is correct
         super(ELI5ValQAConfig, self).read()
+
         with open(self.file_path, encoding='utf-8') as jfile:
             json_data = [json.loads(example) for example in jfile]
 
@@ -38,6 +46,8 @@ class ELI5ValQAConfig(DataParser):
         return None
 
     def convert(self) -> None:
+        # The convert function must call the convert function in DataParser class
+        # I just want to be sure the read function has actually assigned the self.data_read
         super(ELI5ValQAConfig, self).convert()
 
         lfqa_prefixs = [
@@ -114,6 +124,7 @@ class ELI5ValQAConfig(DataParser):
             data_dict['context_lengths'] = None
             data_converted.append(data_dict)
 
+        # Be sure to assign the final data list to self.converted_data
         self.converted_data = data_converted
 
         return None

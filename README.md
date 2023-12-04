@@ -20,7 +20,7 @@
 ![Translation demo](assets/Translate_demo.gif)
 
 * ## Translating any large dataset to any language with the fraction of the time
-    * Spliting large dataset into chunks and running translation in parallel via multithread processing
+    * Splitting large dataset into chunks and running translation in parallel via multithread processing
     * Any thread that fail will restart automatically with its specific chunk until all data point is fully translated
     * Convert into the same format that is support by pyarrow and huggingface-datasets
     * Filters can be use post translation
@@ -70,11 +70,12 @@
   * Be sure to check the output in the examples/YahmaAlpaca dir, there should be an english version and a Vietnamese version
   * If all things go well, you should have your own dataset translated !
   * yahma/alpaca-cleaned datasets on huggingface-hub has 51.8k rows of data
-  * Don't recommend ctrl+C in the middle of translation
+  * Don't recommend ctrl^C in the middle of translation
 * ## Remember to leave a star 🌞 if the test was successful :)
     ## Translate your own dataset
     * #### Look through all the examples in the examples/ dir first !
     * Inherit the DataParser class and implement your read and convert logic
+    * The convert function must map all fields from the original dataset to all fields in the configs/base_config.py
     * Set do_translate=True in the super call like so:
       ```python
       def __init__(self, file_path: str, output_path: str):
@@ -88,7 +89,7 @@
     * Set target_lang to the correct language that you want to be translated
     * Set source_lang if the source dataset is not in english
       
-    * Be sure your converted data from convert function you implemented must have the following fields:
+    * Be sure your converted data from the convert function must have the following fields for each row of data:
       ```python
       @dataclass
       class BaseConfig:
@@ -112,7 +113,7 @@
        "answer_lengths": null
       }
       ```
-      Or you can create a new Config dataclass and replace all instance of BaseConfig :D
+      Or you can create a new config @dataclass and change the self.target_config :D
       * Note: Each example must be a dict 
 * ## Here is the list of all available languages:
 
@@ -345,6 +346,6 @@
 
 * Known issues: 
   * 'TypeError: "NoneType' object is not iterable"
-     This issue is relevant to gender specific translation, you can read more here https://github.com/ssut/py-googletrans/issues/260
+     This issue is relevant to gender-specific translation, you can read more here https://github.com/ssut/py-googletrans/issues/260
 
 

@@ -19,7 +19,9 @@ class AlpacaCleaned(DataParser):
                          do_translate=True,
                          no_translated_code=True,
                          target_lang="vi")
-        # The data config to be validated to check if self implement "convert" function is correct or not
+
+        # The data config to be validated to check if self implement "convert" function is correct or not,
+        # you must map the data form to the correct fields of the @dataclass in the configs/base_config.py
         self.target_config = BaseConfig
 
         # The data fields to be translated (The fields belong to BaseConfig)
@@ -27,13 +29,18 @@ class AlpacaCleaned(DataParser):
 
     # Read function must assign data that has been read to self.data_read
     def read(self) -> None:
+        # The read function must call the read function in DataParser class
+        # I just want to be sure that the file path is correct
         super(AlpacaCleaned, self).read()
+
         self.data_read = load_dataset("yahma/alpaca-cleaned")
 
         return None
 
-    # Read function must assign data that has been read to self.data_read
+    # Convert function must assign data that has been converted to self.converted_data
     def convert(self) -> None:
+        # The convert function must call the convert function in DataParser class
+        # I just want to be sure the read function has actually assigned the self.data_read
         super(AlpacaCleaned, self).convert()
 
         system_prompts = [
@@ -58,13 +65,17 @@ class AlpacaCleaned(DataParser):
                 data_dict = {}
                 # Randomly assign generic system prompt to data
                 data_dict['system_prompt'] = random.choice(system_prompts)
+
+                # The DataParser class has an id_generator method which can create random id for you
                 data_dict['qas_id'] = self.id_generator()
+
                 data_dict['question_text'] = data['instruction'] + " " + data['input']
 
                 data_dict['orig_answer_texts'] = data['output']
                 data_dict['answer_lengths'] = None
                 data_converted.append(data_dict)
 
+        # Be sure to assign the final data list to self.converted_data
         self.converted_data = data_converted
 
         return None

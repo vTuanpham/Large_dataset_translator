@@ -17,16 +17,28 @@ class MathInstruct(DataParser):
         super().__init__(file_path, output_path,
                          parser_name=PARSER_NAME,
                          do_translate=True)
+
+        # The data config to be validated to check if self implement "convert" function is correct or not,
+        # you must map the data form to the correct fields of the @dataclass in the configs/base_config.py
         self.target_config = BaseConfig
+
+        # The data fields to be translated (The fields belong to BaseConfig)
         self.target_fields = ['question_text', 'orig_answer_texts']
 
+    # Read function must assign data that has been read to self.data_read
     def read(self):
+        # The read function must call the read function in DataParser class
+        # I just want to be sure that the file path is correct
         super(MathInstruct, self).read()
+
         self.data_read = load_dataset("TIGER-Lab/MathInstruct")
 
         return None
 
+    # Convert function must assign data that has been converted to self.converted_data
     def convert(self):
+        # The convert function must call the convert function in DataParser class
+        # I just want to be sure the read function has actually assigned the self.data_read
         super(MathInstruct, self).convert()
 
         math_qa_system_prompts = [
@@ -77,6 +89,7 @@ class MathInstruct(DataParser):
                 data_dict = {}
                 data_dict['system_prompt'] = random.choice(math_qa_system_prompts)
 
+                # The DataParser class has an id_generator method which can create random id for you
                 data_dict['qas_id'] = self.id_generator()
                 data_dict['question_text'] = data['instruction']
 
@@ -84,6 +97,7 @@ class MathInstruct(DataParser):
                 data_dict['answer_lengths'] = None
                 data_converted.append(data_dict)
 
+        # Be sure to assign the final data list to self.converted_data
         self.converted_data = data_converted[20000:120000]
 
         pass

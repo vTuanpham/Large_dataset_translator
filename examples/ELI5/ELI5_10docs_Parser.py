@@ -21,7 +21,9 @@ class ELI5Val(DataParser):
                          max_example_per_thread=max_example_per_thread,
                          large_chunks_threshold=large_chunks_threshold)
         self.max_ctxs = 5
-        # The data config to be validated to check if self implement "convert" function is correct or not
+
+        # The data config to be validated to check if self implement "convert" function is correct or not,
+        # you must map the data form to the correct fields of the @dataclass in the configs/base_config.py
         self.target_config = BaseConfig
 
         # The data fields to be translated (The fields belong to BaseConfig)
@@ -29,7 +31,10 @@ class ELI5Val(DataParser):
 
     # Read function must assign data that has been read to self.data_read
     def read(self) -> None:
+        # The read function must call the read function in DataParser class
+        # I just want to be sure that the file path is correct
         super(ELI5Val, self).read()
+
         with open(self.file_path, encoding='utf-8') as jfile:
             json_data = [json.loads(example) for example in jfile]
 
@@ -37,6 +42,8 @@ class ELI5Val(DataParser):
         return None
 
     def convert(self) -> None:
+        # The convert function must call the convert function in DataParser class
+        # I just want to be sure the read function has actually assigned the self.data_read
         super(ELI5Val, self).convert()
 
         lfqa_prefixs = [
@@ -113,6 +120,7 @@ class ELI5Val(DataParser):
             data_dict['answer_lengths'] = None
             data_converted.append(data_dict)
 
+        # Be sure to assign the final data list to self.converted_data
         self.converted_data = data_converted
 
         return None
