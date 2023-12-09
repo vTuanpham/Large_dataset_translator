@@ -138,17 +138,19 @@ class DataParser(metaclass=ForceBaseCallMeta):
                         example[key] = example[key][:15000]
 
                 if self.enable_sub_task_thread:
+                    average_length_sub_task_criteria = False
                     if type == "list" and len(example[key]) > 2:
                         average_length = sum(len(lst) for lst in example[key]) / len(example[key])
-                    if (len(example[key]) <= self.max_list_length_per_thread or average_length < 1600) and type == "list" or type == "str":
-                        example[key] = self.translate_en2vi(src_texts=example[key], data_type=type, translator=translator)
-                    elif type == "list":
+                        if average_length > 1600: average_length_sub_task_criteria = True
+                    if type == "list" and average_length_sub_task_criteria and len(example[key]) >= self.max_list_length_per_thread:
                         # tqdm.write(f"\nSplitting {key} field which contain {len(example[key])} items on chunk {progress_idx}\n")
                         example[key] = self.multithread_list_str_translate(example[key],
                                                                            type,
                                                                            translator,
                                                                            progress_idx,
                                                                            key)
+                    else:
+                        example[key] = self.translate_en2vi(src_texts=example[key], data_type=type, translator=translator)
                 else:
                     example[key] = self.translate_en2vi(src_texts=example[key], data_type=type, translator=translator)
 

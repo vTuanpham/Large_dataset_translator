@@ -26,13 +26,6 @@ class ShareGPTV3(DataParser):
                          large_chunks_threshold=large_chunks_threshold,
                          max_list_length_per_thread=max_list_length_per_thread)
 
-        # # The data config to be validated to check if self implement "convert" function is correct or not,
-        # # you must map the data form to the correct fields of the @dataclass in the configs/base_config.py
-        # self.target_config = DialogsConfig
-        #
-        # # The data fields to be translated (The fields belong to BaseConfig)
-        # self.target_fields = ['user_prompts', 'agent_responses', 'hello']
-
     # Read function must assign data that has been read to self.data_read
     def read(self) -> None:
         # The read function must call the read function in DataParser class

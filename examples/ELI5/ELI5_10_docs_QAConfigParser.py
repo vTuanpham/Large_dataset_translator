@@ -23,11 +23,12 @@ class ELI5ValQAConfig(DataParser):
                                                   # you must map the data form to the correct fields of the @dataclass in the configs/qa_config.py
                          target_fields=['question_text', 'context_list', 'answers_list'],     # The data fields to be translated (The fields belong to QAConfig)
                          do_translate=True,
+                         max_list_length_per_thread=3,
                          target_lang=target_lang,
                          max_example_per_thread=max_example_per_thread,
                          large_chunks_threshold=large_chunks_threshold)
-        self.max_ctxs = 3
-        self.max_answers = 2
+        self.max_ctxs = 5
+        self.max_answers = 3
 
     # Read function must assign data that has been read to self.data_read
     def read(self) -> None:
