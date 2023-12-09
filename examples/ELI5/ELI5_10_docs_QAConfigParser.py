@@ -19,19 +19,15 @@ class ELI5ValQAConfig(DataParser):
                  max_example_per_thread=400, large_chunks_threshold=20000):
         super().__init__(file_path, output_path,
                          parser_name=PARSER_NAME,
+                         target_config=QAConfig,  # The data config to be validated to check if self implement "convert" function is correct or not,
+                                                  # you must map the data form to the correct fields of the @dataclass in the configs/qa_config.py
+                         target_fields=['question_text', 'context_list', 'answers_list'],     # The data fields to be translated (The fields belong to QAConfig)
                          do_translate=True,
                          target_lang=target_lang,
                          max_example_per_thread=max_example_per_thread,
                          large_chunks_threshold=large_chunks_threshold)
         self.max_ctxs = 3
         self.max_answers = 2
-
-        # The data config to be validated to check if self implement "convert" function is correct or not,
-        # you must map the data form to the correct fields of the @dataclass in the configs/qa_config.py
-        self.target_config = QAConfig
-
-        # The data fields to be translated (The fields belong to QAConfig)
-        self.target_fields = ['question_text', 'context_list', 'answers_list']
 
     # Read function must assign data that has been read to self.data_read
     def read(self) -> None:

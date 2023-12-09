@@ -16,18 +16,15 @@ class ELI5Val(DataParser):
                  max_example_per_thread=400, large_chunks_threshold=20000):
         super().__init__(file_path, output_path,
                          parser_name=PARSER_NAME,
+                         target_config=BaseConfig,  # The data config to be validated to check if self implement "convert" function is correct or not,
+                                                    # you must map the data form to the correct fields of the @dataclass in the configs/base_config.py
+                         target_fields=['question_text', 'orig_answer_texts'],     # The data fields to be translated (The fields belong to BaseConfig)
                          do_translate=True,
                          target_lang=target_lang,
                          max_example_per_thread=max_example_per_thread,
                          large_chunks_threshold=large_chunks_threshold)
+
         self.max_ctxs = 5
-
-        # The data config to be validated to check if self implement "convert" function is correct or not,
-        # you must map the data form to the correct fields of the @dataclass in the configs/base_config.py
-        self.target_config = BaseConfig
-
-        # The data fields to be translated (The fields belong to BaseConfig)
-        self.target_fields = ['question_text', 'orig_answer_texts']
 
     # Read function must assign data that has been read to self.data_read
     def read(self) -> None:
