@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - dev
+      - feat/*
 jobs:
   test:
     runs-on: ubuntu-latest
