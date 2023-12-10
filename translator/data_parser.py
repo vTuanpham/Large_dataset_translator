@@ -29,7 +29,7 @@ from .utils import force_super_call, ForceBaseCallMeta, timeit, have_internet
 from .filters import have_code, have_re_code
 
 
-if not have_internet:
+if not have_internet(timeout=5):
     raise ConnectionError("Please provide internet connection as this script require external api calls")
 
 
