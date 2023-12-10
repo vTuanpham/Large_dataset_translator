@@ -176,11 +176,9 @@ class DataParser(metaclass=ForceBaseCallMeta):
                 nonlocal translated_list_data
                 nonlocal finished_task
                 nonlocal manager
-                nonlocal lock
                 if not future.exception():
-                    with lock:
-                        translated_list_data.append(future.result())
-                        finished_task += 1
+                    translated_list_data.extend(future.result())
+                    finished_task += 1
                 else:
                     tqdm.write(f"Sub task of chunk {progress_idx} with field {field_name} failed with the following error: {future.exception()}."
                                f"\nRestarting thread when others finished...")
@@ -316,14 +314,12 @@ class DataParser(metaclass=ForceBaseCallMeta):
                 def callback_done(future):
                     nonlocal translated_data
                     nonlocal finished_task
-                    nonlocal lock
                     nonlocal progress_bar
                     if not future.exception():
-                        with lock:
-                            translated_data += future.result()
-                            finished_task += 1
-                            progress_bar.update(1)
-                            tqdm.write("\nTask finished, adding translated data to result...\n")
+                        translated_data.extend(future.result())
+                        finished_task += 1
+                        progress_bar.update(1)
+                        tqdm.write("\nTask finished, adding translated data to result...\n")
                     else:
                         tqdm.write(f"\nTask failed with the following error: {future.exception()}."
                                    f"\nRestarting thread when others finished\n")
