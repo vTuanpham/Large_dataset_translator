@@ -160,3 +160,4 @@ cython_debug/
 
 *.json
 .idea/
+*.Identifier
