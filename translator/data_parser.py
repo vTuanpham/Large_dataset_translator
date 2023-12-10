@@ -1,3 +1,4 @@
+import math
 import re
 import json
 import os
@@ -169,12 +170,13 @@ class DataParser(metaclass=ForceBaseCallMeta):
             futures = []
             finished_task = 0
             manager = multiprocessing.Manager()
+            lock = manager.Lock()
 
             def callback_list_done(future):
                 nonlocal translated_list_data
                 nonlocal finished_task
                 nonlocal manager
-                lock = manager.Lock()
+                nonlocal lock
                 if not future.exception():
                     with lock:
                         translated_list_data.append(future.result())
@@ -194,18 +196,8 @@ class DataParser(metaclass=ForceBaseCallMeta):
                 }
                 futures.append(future_dict)
 
-            # Progress bar
-            # desc = f"Translating sub-list of {field_name} of chunk {progress_idx} sub-chunk"
-            # progress_bar = tqdm(total=len(futures), desc=desc, colour="red")
-            # # Manually refresh the progress bar to display it
-            # progress_bar.refresh()
-
-            tmp_finished_task = 0
             # Wait for all threads to complete
             while finished_task < len(futures):
-                # if finished_task != tmp_finished_task:
-                #     progress_bar.update(1)
-                #     tmp_finished_task = finished_task
                 for future_dict in futures:
                     # If exception occurs in one of the thread, restart the thread with its specific chunk
                     if future_dict['future'].exception():
@@ -310,20 +302,27 @@ class DataParser(metaclass=ForceBaseCallMeta):
                       range(0, len(converted_data), self.max_example_per_thread)]
             tqdm.write(f"\n Data too large, splitting data into {num_threads} chunk, each chunk is {len(chunks[0])}"
                        f" Processing with multithread...\n")
+
+            # Progress bar
+            desc = "Translating total converted large chunk data" if large_chunk else "Translating total converted data"
+            progress_bar = tqdm(total=math.ceil(num_threads), desc=desc)
+
             with ThreadPoolExecutor(max_workers=num_threads) as executor:
                 futures = []
                 finished_task = 0
                 manager = multiprocessing.Manager()
+                lock = manager.Lock()
 
                 def callback_done(future):
                     nonlocal translated_data
                     nonlocal finished_task
-                    nonlocal manager
-                    lock = manager.Lock()
+                    nonlocal lock
+                    nonlocal progress_bar
                     if not future.exception():
                         with lock:
                             translated_data += future.result()
                             finished_task += 1
+                            progress_bar.update(1)
                             tqdm.write("\nTask finished, adding translated data to result...\n")
                     else:
                         tqdm.write(f"\nTask failed with the following error: {future.exception()}."
@@ -342,18 +341,8 @@ class DataParser(metaclass=ForceBaseCallMeta):
                         "idx": idx}
                     futures.append(future_dict)
 
-                # Progress bar
-                desc = "Translating total converted large chunk data" if large_chunk else "Translating total converted data"
-                progress_bar = tqdm(total=len(futures), desc=desc)
-                # Manually refresh the progress bar to display it
-                progress_bar.refresh()
-
-                tmp_finished_task = 0
                 # Wait for all threads to complete
                 while finished_task < len(futures):
-                    if tmp_finished_task != finished_task:
-                        progress_bar.update(1)
-                        tmp_finished_task = finished_task
                     for future_dict in futures:
                         # If exception occurs in one of the thread, restart the thread with its specific chunk
                         if future_dict['future'].exception():

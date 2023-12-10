@@ -28,9 +28,11 @@ class TestELI5Val(unittest.TestCase):
     def step4(self):
         self.parser.save
 
-        self.output_path = os.path.join(self.output_dir, "ELI5_val_translated_de.json")
+        self.output_path = os.path.join(self.output_dir, "ELI5_val.json")
+        self.output_path_translated = os.path.join(self.output_dir, "ELI5_val_translated_de.json")
 
         self.assertTrue(os.path.exists(self.output_path), f"File '{self.output_path}' does not exist")
+        self.assertTrue(os.path.exists(self.output_path_translated), f"File '{self.output_path_translated}' does not exist")
 
     def step5(self):
         try:
@@ -46,6 +48,8 @@ class TestELI5Val(unittest.TestCase):
     def step7(self):
         if os.path.exists(self.output_path):
             os.remove(self.output_path)
+        if os.path.exists(self.output_path_translated):
+            os.remove(self.output_path_translated)
 
     def _steps(self):
         for name in dir(self):  # dir() result is implicitly sorted
