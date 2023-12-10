@@ -5,14 +5,13 @@ import os
 import random
 import sys
 import string
-import multiprocessing
+import threading
 import warnings
 from pprint import pprint
 
 sys.path.insert(0, r'./')
 try:
     from google.colab import files
-
     IN_COLAB = True
 except ImportError:
     IN_COLAB = False
@@ -27,7 +26,7 @@ from googletrans import Translator
 
 from configs import BaseConfig, QAConfig, DialogsConfig
 from .utils import force_super_call, ForceBaseCallMeta, timeit, have_internet
-from .filters import have_code
+from .filters import have_code, have_re_code
 
 
 if not have_internet:
@@ -48,6 +47,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
                  max_list_length_per_thread: int = 3,
                  source_lang: str = "en",
                  target_lang: str = "vi",
+                 fail_translation_code: str="P1OP1_F"
                  ) -> None:
 
         self.data_read = None
@@ -63,6 +63,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
         self.do_translate = do_translate
 
         if self.do_translate:
+            self.fail_translation_code = fail_translation_code
             self.enable_sub_task_thread = enable_sub_task_thread
             self.source_lang = source_lang
             self.target_lang = target_lang
@@ -113,8 +114,23 @@ class DataParser(metaclass=ForceBaseCallMeta):
         print(f"\nTotal data left after filtering for translation: {len(validated_translate_data)}\n")
         self.converted_data = validated_translate_data
 
+    @timeit
     def post_translate_validate(self) -> None:
-        pass
+        post_validated_translate_data = []
+        # Note: This validates will override the original self.converted_data_translated
+        for idx, example in enumerate(tqdm(self.converted_data_translated, desc="Validating data after translation:")):
+            for key in self.target_fields:
+                example_filters = 0
+                if have_re_code(example[key], code=self.fail_translation_code):
+                    example_filters += 1
+                    if len(self.converted_data_translated) - 1 == idx:
+                        tqdm.write(f"Number of example with fail code: {example_filters}")
+                    break
+                elif key == self.target_fields[-1]:
+                    post_validated_translate_data.append(example)
+
+        print(f"\nTotal data left after filtering fail translation: {len(post_validated_translate_data)}\n")
+        self.converted_data_translated = post_validated_translate_data
 
     @staticmethod
     def id_generator(size=6, chars=string.ascii_uppercase + string.digits) -> str:
@@ -169,16 +185,18 @@ class DataParser(metaclass=ForceBaseCallMeta):
         with ThreadPoolExecutor(max_workers=num_threads) as executor:
             futures = []
             finished_task = 0
-            manager = multiprocessing.Manager()
-            lock = manager.Lock()
+            lock = threading.Lock()
 
             def callback_list_done(future):
                 nonlocal translated_list_data
                 nonlocal finished_task
-                nonlocal manager
+                nonlocal lock
                 if not future.exception():
-                    translated_list_data.extend(future.result())
-                    finished_task += 1
+                    with lock:
+                        # This need to be .append to keep the list structure
+                        # Since this deal with sub-list and needed to be merged later
+                        translated_list_data.append(future.result())
+                        finished_task += 1
                 else:
                     tqdm.write(f"Sub task of chunk {progress_idx} with field {field_name} failed with the following error: {future.exception()}."
                                f"\nRestarting thread when others finished...")
@@ -186,7 +204,11 @@ class DataParser(metaclass=ForceBaseCallMeta):
 
             for idx, list_chunk in enumerate(sub_str_lists):
                 # Assign each thread with a new Translator instance
-                future_chunk = executor.submit(self.translate_en2vi, list_chunk, data_type, Translator(), idx)
+                future_chunk = executor.submit(self.translate_en2vi,
+                                               src_texts=list_chunk,
+                                               data_type=data_type,
+                                               translator=Translator(),
+                                               sub_list_idx=idx)
                 future_chunk.add_done_callback(callback_list_done)
                 future_dict = {
                     "future": future_chunk,
@@ -201,8 +223,11 @@ class DataParser(metaclass=ForceBaseCallMeta):
                     if future_dict['future'].exception():
                         tqdm.write(
                             f"\n Thread {future_dict['idx']} failed, restarting thread with chunk {future_dict['idx']}\n")
-                        backup_future_chunk = executor.submit(self.translate_en2vi, sub_str_lists[future_dict['idx']],
-                                                              data_type, Translator(), future_dict['idx'])
+                        backup_future_chunk = executor.submit(self.translate_en2vi,
+                                                              src_texts=sub_str_lists[future_dict['idx']],
+                                                              data_type=data_type,
+                                                              translator=Translator(),
+                                                              sub_list_idx=future_dict['idx'])
                         backup_future_chunk.add_done_callback(callback_list_done)
                         backup_future_dict = {
                                               "future": backup_future_chunk,
@@ -242,10 +267,16 @@ class DataParser(metaclass=ForceBaseCallMeta):
         try:
             target_texts = translator_instance.translate(src_texts, src=self.source_lang, dest=self.target_lang)
         except TypeError:
+            # TypeError likely due to gender-specific translation, which has no fix yet. Please refer to
+            # ssut/py-googletrans#260 for more info
             if sub_list_idx is None:
-                target_texts = translator_instance.translate("Translate fail ERR ERR", src=self.source_lang, dest=self.target_lang)
+                target_texts = translator_instance.translate(self.fail_translation_code,
+                                                             src=self.source_lang,
+                                                             dest=self.target_lang)
             else:
-                target_texts = translator_instance.translate(["Translate fail ERR ERR", "Translate fail ERR ERR"], src=self.source_lang, dest=self.target_lang)
+                target_texts = translator_instance.translate([self.fail_translation_code, self.fail_translation_code],
+                                                             src=self.source_lang,
+                                                             dest=self.target_lang)
 
         def extract_texts(obj):
             if isinstance(obj, list):
@@ -308,17 +339,19 @@ class DataParser(metaclass=ForceBaseCallMeta):
             with ThreadPoolExecutor(max_workers=num_threads) as executor:
                 futures = []
                 finished_task = 0
-                manager = multiprocessing.Manager()
-                lock = manager.Lock()
+                lock = threading.Lock()
 
                 def callback_done(future):
                     nonlocal translated_data
                     nonlocal finished_task
                     nonlocal progress_bar
+                    nonlocal lock
                     if not future.exception():
-                        translated_data.extend(future.result())
-                        finished_task += 1
-                        progress_bar.update(1)
+                        with lock:
+                            # This need to be += or .extend to shallow flatten the list structure
+                            translated_data += future.result()
+                            finished_task += 1
+                            progress_bar.update(1)
                         tqdm.write("\nTask finished, adding translated data to result...\n")
                     else:
                         tqdm.write(f"\nTask failed with the following error: {future.exception()}."
@@ -426,6 +459,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
         if self.do_translate:
             self.pre_translate_validate()
             self.translate_converted()
+            self.post_translate_validate()
             assert self.converted_data_translated is not None, "Converted data haven't been translated yet!"
             output_translated_path = os.path.join(self.output_dir,
                                                   f"{self.parser_name}_translated_{self.target_lang}.json")

@@ -18,7 +18,6 @@ class ShareGPTV3(DataParser):
         super().__init__(file_path, output_path,
                          parser_name=PARSER_NAME,
                          do_translate=True,
-                         no_translated_code=True,
                          target_config=DialogsConfig,
                          target_fields=['user_prompts', 'agent_responses'],
                          target_lang=target_lang,
@@ -65,7 +64,7 @@ class ShareGPTV3(DataParser):
             data_converted.append(data_dict)
 
         # Be sure to assign the final data list to self.converted_data
-        self.converted_data = data_converted
+        self.converted_data = data_converted[:5000]
 
         return None
 

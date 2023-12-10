@@ -94,7 +94,7 @@ class MathInstruct(DataParser):
                 data_converted.append(data_dict)
 
         # Be sure to assign the final data list to self.converted_data
-        self.converted_data = data_converted[20000:120000]
+        self.converted_data = data_converted
 
         pass
 
