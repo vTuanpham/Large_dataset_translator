@@ -1,6 +1,8 @@
 import os
 import unittest
 import warnings
+import sys
+sys.path.insert(0,r'./')
 
 from datasets import load_dataset
 

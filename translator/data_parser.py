@@ -270,8 +270,8 @@ class DataParser(metaclass=ForceBaseCallMeta):
 
         return {'text_list': target_texts, 'key': sub_list_idx} if sub_list_idx is not None else target_texts
 
-    @timeit
-    def translate_converted(self, en_data: List[str] = None,
+    def translate_converted(self,
+                            en_data: List[str] = None,
                             desc: str = None,
                             translator: Translator = None,
                             large_chunk: List[str] = None) -> Union[None, List[str]]:
@@ -332,7 +332,10 @@ class DataParser(metaclass=ForceBaseCallMeta):
 
                 for idx, chunk in enumerate(chunks):
                     # Assign each thread with a new Translator instance
-                    future_chunk = executor.submit(self.translate_converted, chunk, f"chunk {idx}", Translator())
+                    future_chunk = executor.submit(self.translate_converted,
+                                                   en_data=chunk,
+                                                   desc=f"chunk {idx}",
+                                                   translator=Translator())
                     future_chunk.add_done_callback(callback_done)
                     future_dict = {
                         "future": future_chunk,
@@ -356,8 +359,10 @@ class DataParser(metaclass=ForceBaseCallMeta):
                         if future_dict['future'].exception():
                             tqdm.write(
                                 f"\n Thread {future_dict['idx']} failed, restarting thread with chunk {future_dict['idx']}\n")
-                            backup_future_chunk = executor.submit(self.translate_converted, chunks[future_dict['idx']],
-                                                                  f"Backup chunk {future_dict['idx']}", Translator())
+                            backup_future_chunk = executor.submit(self.translate_converted,
+                                                                  en_data=chunks[future_dict['idx']],
+                                                                  desc=f"Backup chunk {future_dict['idx']}",
+                                                                  translator=Translator())
                             backup_future_chunk.add_done_callback(callback_done)
                             backup_future_dict = {"future": backup_future_chunk,
                                                   "idx": future_dict['idx']}
@@ -381,9 +386,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
             for example in tqdm(converted_data, desc=progress_bar_desc, colour="blue"):
                 translated_data_example = self.translate_en2vi_advance_qa(example,
                                                                           translator,
-                                                                          progress_idx=int(re.findall(r'\d+', desc)[
-                                                                                               0]) if re.findall(r'\d+',
-                                                                                                                 desc) else 0)
+                                                                          progress_idx=int(re.findall(r'\d+', desc)[0]) if desc and re.findall(r'\d+', desc) else 0)
                 translated_data.append(translated_data_example)
             if en_data: return translated_data
             if large_chunk:

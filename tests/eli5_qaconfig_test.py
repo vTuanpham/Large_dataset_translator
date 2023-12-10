@@ -1,7 +1,8 @@
 import os
 import unittest
 import warnings
-
+import sys
+sys.path.insert(0,r'./')
 from datasets import load_dataset
 
 from examples.ELI5.ELI5_10_docs_QAConfigParser import ELI5ValQAConfig

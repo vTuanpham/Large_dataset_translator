@@ -128,7 +128,7 @@ if __name__ == '__main__':
                               r"examples/ELI5",
                               max_example_per_thread=100,
                               large_chunks_threshold=1000,
-                              target_lang="ko")
+                              target_lang="ru")
     eli5_val_parser.read()
     eli5_val_parser.convert()
     eli5_val_parser.save
