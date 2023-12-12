@@ -19,16 +19,18 @@
 ### Here's the DataParser class in action, 1507 rows translated to Korean in under 2 minutes
 ![Translation demo](assets/Translate_demo.gif)
 
-* ## Translating any large dataset to any language with the fraction of the time
+* ## Translating any large dataset to any language with the fraction of the time and completely free of charge
     * Splitting large dataset into chunks and running translation in parallel via multithread processing
+    * If a single example contains large list(eg. Dialogs example), the parser will split the list into sub-list and translate each sub-list in parallel
     * Any thread that fail will restart automatically with its specific chunk until all data point is fully translated
     * Convert into the same format that is support by pyarrow and huggingface-datasets
-    * Filters can be use post translation
+    * Filters can be use pre-translation
       * Remove examples that might contain code
         (Code example that have variable, function name,... will be translated by google)
+    * Python GIL(Global interpreter lock) won't affect the speed due to all tasks consist of purely API calls (I/O bound task)
     * Automatically download the converted dataset and the translated dataset if you're on colab upon finished
     * Unlimited translation, no api key required
-* ### Dataset like ELI5, OpenOcra that have over 100k examples that will take up more than a 1000 hours on a single thread can be translate in under 2 hours 
+* ### Dataset like ELI5, OpenOcra that have well over 100k examples that will take up more than a 1000 hours on a single thread can be translate in under 2 hours 
 
 * ## Setup
     #### Have python 3.8 or above
@@ -89,7 +91,7 @@
     * Set target_lang to the correct language that you want to be translated
     * Set source_lang if the source dataset is not in english
       
-    * Be sure your converted data from the convert function must have the following fields for each row of data:
+    * Be sure your converted data from the convert function must contain the following fields for each row of data:
       ```python
       @dataclass
       class BaseConfig:
@@ -114,6 +116,8 @@
       }
       ```
       Or you can create a new config @dataclass and change the self.target_config :D
+      * Only List[str] and str type field are supported for now
+      * There are also a couple of configs in the configs/ dir for you to choose
       * Note: Each example must be a dict 
 * ## Here is the list of all available languages:
 
