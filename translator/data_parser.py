@@ -38,14 +38,17 @@ class DataParser(metaclass=ForceBaseCallMeta):
                  target_fields: List[str],
                  target_config: Union[BaseConfig, QAConfig, DialogsConfig],
                  do_translate: bool = False,
-                 enable_sub_task_thread: bool = True,
+                 enable_sub_task_thread: bool = True,  # Enable splitting the list into sublist if a list of one example is too large to process
+                                                       # This argument go with max_list_length_per_thread
                  no_translated_code: bool = False,
-                 max_example_per_thread: int = 400,
-                 large_chunks_threshold: int = 20000,
-                 max_list_length_per_thread: int = 3,
+                 max_example_per_thread: int = 400,  # How many examples, each thread can contain
+                 large_chunks_threshold: int = 20000,  # Maximum number of examples that will be evenly across threads
+                 max_list_length_per_thread: int = 3,  # Maximum number of strings contain in a list in a single thread.
+                                                       # if larger, split the list into sub-list and process in parallel
                  source_lang: str = "en",
                  target_lang: str = "vi",
-                 fail_translation_code: str="P1OP1_F"
+                 fail_translation_code: str="P1OP1_F"  # Fail code for unexpected fail translation and can be removed
+                                                       # post-translation
                  ) -> None:
 
         self.data_read = None

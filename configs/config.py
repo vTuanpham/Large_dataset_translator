@@ -8,7 +8,11 @@ from dataclasses import dataclass
 
 @dataclass
 class Config(ABC):
-    qas_id: str
+    """
+    Abstract config that inherited all method
+    """
+
+    qas_id: str  # Required field in all subclass
 
     def __str__(self) -> str:
         return self.__repr__
