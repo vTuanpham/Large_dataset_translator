@@ -1,16 +1,15 @@
 import sys
 sys.path.insert(0,r'./')
-import pprint
+from .config import Config
 from typing import List, Dict
 from dataclasses import dataclass, asdict, fields
 
 
 @dataclass
-class QAConfig:
+class QAConfig(Config):
     """
     A single training/test example for question answering config.
     """
-    qas_id: str
     system_prompt: str
 
     question_text: str
@@ -24,9 +23,6 @@ class QAConfig:
         # Post validate
         self.answer_lengths = [len(answer) for answer in self.answers_list]
         self.context_lengths = [len(context) for context in self.context_list]
-
-    def __str__(self) -> str:
-        return self.__repr__
 
     @property
     def __repr__(self) -> str:
@@ -51,15 +47,10 @@ class QAConfig:
     def get_dict(self) -> Dict:
         return asdict(self)
 
-    @staticmethod
-    def get_keys() -> List[str]:
-        all_fields = fields(QAConfig)
+    @classmethod
+    def get_keys(cls) -> List[str]:
+        all_fields = fields(cls)
         return [v.name for v in all_fields]
-
-    @property
-    def get_dict_str(self, indent: int=4) -> None:
-        pp = pprint.PrettyPrinter(indent=indent)
-        pp.pprint(self.get_dict)
 
 
 

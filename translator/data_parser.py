@@ -4,12 +4,10 @@ import json
 import os
 import random
 import sys
+sys.path.insert(0, r'./')
 import string
 import threading
 import warnings
-from pprint import pprint
-
-sys.path.insert(0, r'./')
 try:
     from google.colab import files
     IN_COLAB = True
@@ -147,11 +145,11 @@ class DataParser(metaclass=ForceBaseCallMeta):
                 if type == "list":
                     for data in example[key]:
                         if len(data) > 15000:
-                            warnings.warn("\n Example" + example["qas_id"] + " have field len larger than 15000")
+                            warnings.warn("Example" + example["qas_id"] + " have field len larger than 15000")
                             example[key].append(data[:15000])
                 else:
                     if len(example[key]) > 15000:
-                        warnings.warn("\n Example" + example["qas_id"] + " have field len larger than 15000")
+                        warnings.warn("Example" + example["qas_id"] + " have field len larger than 15000")
                         example[key] = example[key][:15000]
 
                 if self.enable_sub_task_thread:
@@ -199,7 +197,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
                         finished_task += 1
                 else:
                     tqdm.write(f"Sub task of chunk {progress_idx} with field {field_name} failed with the following error: {future.exception()}."
-                               f"\nRestarting thread when others finished...")
+                               f"Restarting thread when others finished...")
                 pass
 
             for idx, list_chunk in enumerate(sub_str_lists):
@@ -222,7 +220,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
                     # If exception occurs in one of the thread, restart the thread with its specific chunk
                     if future_dict['future'].exception():
                         tqdm.write(
-                            f"\n Thread {future_dict['idx']} failed, restarting thread with chunk {future_dict['idx']}\n")
+                            f"Thread {future_dict['idx']} failed, restarting thread with chunk {future_dict['idx']}")
                         backup_future_chunk = executor.submit(self.translate_en2vi,
                                                               src_texts=sub_str_lists[future_dict['idx']],
                                                               data_type=data_type,
@@ -317,10 +315,10 @@ class DataParser(metaclass=ForceBaseCallMeta):
             large_chunks = [converted_data[x:x + self.large_chunks_threshold] for x in
                             range(0, len(converted_data), self.large_chunks_threshold)]
             tqdm.write(
-                f"\n Data is way too large, spliting data into {num_large_chunks} large chunk for sequential translation\n")
+                f"Data is way too large, spliting data into {num_large_chunks} large chunk for sequential translation")
 
             for idx, large_chunk in enumerate(tqdm(large_chunks, desc=f"Translating large chunk ", colour="red")):
-                tqdm.write(f" Processing large chunk No: {idx}")
+                tqdm.write(f"Processing large chunk No: {idx}")
                 self.translate_converted(large_chunk=large_chunk)
             return None
 
@@ -329,8 +327,8 @@ class DataParser(metaclass=ForceBaseCallMeta):
             num_threads = len(converted_data) / self.max_example_per_thread
             chunks = [converted_data[x:x + self.max_example_per_thread] for x in
                       range(0, len(converted_data), self.max_example_per_thread)]
-            tqdm.write(f"\n Data too large, splitting data into {num_threads} chunk, each chunk is {len(chunks[0])}"
-                       f" Processing with multithread...\n")
+            tqdm.write(f"Data too large, splitting data into {num_threads} chunk, each chunk is {len(chunks[0])}"
+                       f"Processing with multithread...")
 
             # Progress bar
             desc = "Translating total converted large chunk data" if large_chunk else "Translating total converted data"
@@ -352,10 +350,9 @@ class DataParser(metaclass=ForceBaseCallMeta):
                             translated_data += future.result()
                             finished_task += 1
                             progress_bar.update(1)
-                        tqdm.write("\nTask finished, adding translated data to result...\n")
                     else:
-                        tqdm.write(f"\nTask failed with the following error: {future.exception()}."
-                                   f"\nRestarting thread when others finished\n")
+                        tqdm.write(f"Task failed with the following error: {future.exception()}."
+                                   f"Restarting thread when others finished")
                         pass
 
                 for idx, chunk in enumerate(chunks):
@@ -376,7 +373,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
                         # If exception occurs in one of the thread, restart the thread with its specific chunk
                         if future_dict['future'].exception():
                             tqdm.write(
-                                f"\n Thread {future_dict['idx']} failed, restarting thread with chunk {future_dict['idx']}\n")
+                                f"Thread {future_dict['idx']} failed, restarting thread with chunk {future_dict['idx']}")
                             backup_future_chunk = executor.submit(self.translate_converted,
                                                                   en_data=chunks[future_dict['idx']],
                                                                   desc=f"Backup chunk {future_dict['idx']}",
@@ -417,9 +414,9 @@ class DataParser(metaclass=ForceBaseCallMeta):
             if not desc:
                 raise ConnectTimeout(f" Connection timeout, please provide better connection")
             else:
-                tqdm.write(f"\n Connection timeout from thread {desc}\n, please provide better connection")
+                tqdm.write(f"Connection timeout from thread {desc}, please provide better connection")
                 raise ConnectTimeout(
-                    f" Connection timeout raise from thread {desc}\n, please provide better connection")
+                    f" Connection timeout raise from thread {desc}, please provide better connection")
 
     @abstractmethod
     @force_super_call

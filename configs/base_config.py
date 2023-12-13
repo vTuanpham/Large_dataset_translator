@@ -1,16 +1,15 @@
 import sys
 sys.path.insert(0,r'./')
-import pprint
+from .config import Config
 from typing import List, Dict
-from dataclasses import dataclass, field, asdict, fields
+from dataclasses import dataclass, asdict, fields
 
 
 @dataclass
-class BaseConfig:
+class BaseConfig(Config):
     """
     A single training/test example for base config.
     """
-    qas_id: str
     system_prompt: str
 
     question_text: str
@@ -21,9 +20,6 @@ class BaseConfig:
     def __post_init__(self) -> None:
         # Post validate
         self.answer_lengths = len(self.orig_answer_texts) if self.orig_answer_texts is not None else None
-
-    def __str__(self) -> str:
-        return self.__repr__
 
     @property
     def __repr__(self) -> str:
@@ -41,15 +37,10 @@ class BaseConfig:
     def get_dict(self) -> Dict:
         return asdict(self)
 
-    @staticmethod
-    def get_keys() -> List[str]:
-        all_fields = fields(BaseConfig)
+    @classmethod
+    def get_keys(cls) -> List[str]:
+        all_fields = fields(cls)
         return [v.name for v in all_fields]
-
-    @property
-    def get_dict_str(self, indent: int=4) -> None:
-        pp = pprint.PrettyPrinter(indent=indent)
-        pp.pprint(self.get_dict)
 
     def get_example(self,
                     inputs_column: str="prompt",
