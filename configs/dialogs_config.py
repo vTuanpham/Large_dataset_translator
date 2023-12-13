@@ -1,16 +1,15 @@
 import sys
 sys.path.insert(0,r'./')
-import pprint
 from typing import List, Dict
+from .config import Config
 from dataclasses import dataclass, asdict, fields
 
 
 @dataclass
-class DialogsConfig:
+class DialogsConfig(Config):
     """
     A single training/test example for conversation config.
     """
-    qas_id: str
     system_prompt: str
 
     user_prompts: list
@@ -24,9 +23,6 @@ class DialogsConfig:
         # Post validate
         self.prompt_lengths = [len(prompt) for prompt in self.user_prompts]
         self.answer_lengths = [len(answer) for answer in self.agent_responses]
-
-    def __str__(self) -> str:
-        return self.__repr__
 
     @staticmethod
     def intersect_lists(list1, list2):
@@ -65,15 +61,10 @@ class DialogsConfig:
     def get_dict(self) -> Dict:
         return asdict(self)
 
-    @staticmethod
-    def get_keys() -> List[str]:
-        all_fields = fields(DialogsConfig)
+    @classmethod
+    def get_keys(cls) -> List[str]:
+        all_fields = fields(cls)
         return [v.name for v in all_fields]
-
-    @property
-    def get_dict_str(self, indent: int=4) -> None:
-        pp = pprint.PrettyPrinter(indent=indent)
-        pp.pprint(self.get_dict)
 
 
 if __name__ == "__main__":

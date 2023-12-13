@@ -32,9 +32,10 @@ def code_likelihood_score(text: str) -> Tuple[int, list]:
     return score, found_elements
 
 
-def have_code(text: Union[str, List[str]], threshold: int=5) -> Tuple[bool, int, list]:
+def have_code(text: Union[str, List[str]], threshold: int=8) -> Tuple[bool, int, list]:
     # threshold = len(text.split(" ")) * threshold
     if isinstance(text, list):
+        threshold *= 2
         score = 0
         found_elements = []
         for str_text in text:
