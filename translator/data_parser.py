@@ -4,9 +4,9 @@ import json
 import os
 import random
 import sys
+sys.path.insert(0, r'./')
 from copy import deepcopy
 
-sys.path.insert(0, r'./')
 import string
 import threading
 import warnings
@@ -190,7 +190,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
         with ThreadPoolExecutor(max_workers=num_threads) as executor:
             futures = []
             finished_task = 0
-            lock = threading.Lock()
+            lock = threading.RLock()
 
             def callback_list_done(future):
                 nonlocal translated_list_data
@@ -340,7 +340,8 @@ class DataParser(metaclass=ForceBaseCallMeta):
             with ThreadPoolExecutor(max_workers=num_threads) as executor:
                 futures = []
                 finished_task = 0
-                lock = threading.Lock()
+                # https://stackoverflow.com/questions/22885775/what-is-the-difference-between-lock-and-rlock#22885810
+                lock = threading.RLock()
 
                 def callback_done(future):
                     nonlocal translated_data
@@ -399,7 +400,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
             return None
 
         progress_bar_desc = "Translating converted data" if not desc else f"Translating converted data {desc}"
-        for example in tqdm(converted_data, desc=progress_bar_desc, colour="blue"):
+        for example in tqdm(converted_data, desc=progress_bar_desc):
             translated_data_example = self.translate_en2vi_advance_qa(example,
                                                                       translator,
                                                                       progress_idx=int(re.findall(r'\d+', desc)[0]) if desc and re.findall(r'\d+', desc) else 0)
