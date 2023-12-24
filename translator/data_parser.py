@@ -236,8 +236,6 @@ class DataParser(metaclass=ForceBaseCallMeta):
                                               "idx": future_dict['idx']}
                         futures[future_dict['idx']] = backup_future_dict
                         continue
-                    elif future_dict['future'].result():
-                        continue
 
             # Sorting the list of dictionaries based on the 'key' value
             translated_list_data = sorted(translated_list_data, key=lambda x: x['key'])
@@ -385,8 +383,6 @@ class DataParser(metaclass=ForceBaseCallMeta):
                             backup_future_dict = {"future": backup_future_chunk,
                                                   "idx": future_dict['idx']}
                             futures[future_dict['idx']] = backup_future_dict
-                            continue
-                        elif future_dict['future'].result():
                             continue
 
             if large_chunk:
