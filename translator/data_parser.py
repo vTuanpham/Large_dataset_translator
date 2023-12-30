@@ -30,7 +30,7 @@ from .filters import have_code, have_re_code
 
 
 if not have_internet(timeout=5):
-    raise ConnectionError("Please provide internet connection as this script require external api calls")
+    raise ConnectTimeout("Please provide internet connection as this script require external api calls")
 
 
 class DataParser(metaclass=ForceBaseCallMeta):
@@ -60,7 +60,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
         assert os.path.isdir(self.output_dir), "Please provide the correct output directory"
 
         self.parser_name = parser_name
-        assert target_config, "Please specified the target config"
+        assert target_config, "Please specified the target config (Choose from the configs dir)"
         self.target_config = target_config
 
         self.do_translate = do_translate
@@ -90,12 +90,11 @@ class DataParser(metaclass=ForceBaseCallMeta):
     def get_translator(self) -> Translator:
         return deepcopy(self.translator)()
 
-    @staticmethod
-    def validate(keys: List[str], dataclass: Union[BaseConfig, QAConfig, DialogsConfig] = BaseConfig) -> bool:
-        dict_fields = dataclass.get_keys()
+    def validate(self, keys: List[str]) -> bool:
+        dict_fields = self.target_config.get_keys()
         for key in dict_fields:
             assert key in keys, f"\n Invalid parser, the key '{key}' is missing from {dict_fields}\n" \
-                                f"you can adjust the fields in the 'configs/base_config.py'" \
+                                f"you can adjust the fields {self.target_config.__class__.__name__} in the 'configs/*.py'" \
                                 f"  or fill in the missing field"
         return True
 
@@ -143,7 +142,11 @@ class DataParser(metaclass=ForceBaseCallMeta):
     def id_generator(size=6, chars=string.ascii_uppercase + string.digits) -> str:
         return ''.join(random.choice(chars) for _ in range(size))
 
-    def translate_en2vi_advance_qa(self, example: Dict, translator: Translator = None, progress_idx: int = 0) -> Dict:
+    def __translate_per_key(self, example: Dict, translator: Translator = None, progress_idx: int = 0) -> Dict:
+        '''
+        This function loop through each key of one example and send to __translate_texts if the value of the key is
+        under a certain threshold. If exceeded, then send to __sublist_multithread_translate
+        '''
         assert self.do_translate, "Please enable translate via self.do_translate"
         keys = self.target_config.get_keys()
         for key in keys:
@@ -169,20 +172,25 @@ class DataParser(metaclass=ForceBaseCallMeta):
                     if type == "list" and average_length_sub_task_criteria and len(example[key]) >= self.max_list_length_per_thread:
                         # tqdm.write(f"\nSplitting {key} field which contain {len(example[key])} items on chunk {progress_idx}\n")
                         del translator
-                        example[key] = self.multithread_list_str_translate(example[key],
-                                                                           progress_idx,
-                                                                           key)
+                        example[key] = self.__sublist_multithread_translate(example[key],
+                                                                            progress_idx,
+                                                                            key)
                     else:
-                        example[key] = self.translate_en2vi(src_texts=example[key], translator=translator)
+                        example[key] = self.__translate_texts(src_texts=example[key], translator=translator)
                 else:
-                    example[key] = self.translate_en2vi(src_texts=example[key], translator=translator)
+                    example[key] = self.__translate_texts(src_texts=example[key], translator=translator)
 
         return example
 
-    def multithread_list_str_translate(self,
+    def __sublist_multithread_translate(self,
                                        list_str: List[str],
                                        progress_idx: int = 0,
-                                       field_name: str=None) -> List[str]:
+                                       field_name: str=None # The field name (key name) of one example that exceed a certain threshold and needed to be split and translate in parallel
+                                       ) -> List[str]:
+        '''
+        This function split a large list into sub-list and translate it in parallel, orders are maintained when merge all
+        sub-lists, this is useful when order are necessary (e.g Dialogs example)
+        '''
         translated_list_data = []
         num_threads = len(list_str) / self.max_list_length_per_thread
         sub_str_lists = [list_str[x:x + self.max_list_length_per_thread] for x in
@@ -192,7 +200,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
             finished_task = 0
             lock = threading.RLock()
 
-            def callback_list_done(future):
+            def callback_sub_list_done(future):
                 nonlocal translated_list_data
                 nonlocal finished_task
                 nonlocal lock
@@ -209,11 +217,11 @@ class DataParser(metaclass=ForceBaseCallMeta):
 
             for idx, list_chunk in enumerate(sub_str_lists):
                 # Assign each thread with a new Translator instance
-                future_chunk = executor.submit(self.translate_en2vi,
+                future_chunk = executor.submit(self.__translate_texts,
                                                src_texts=list_chunk,
                                                translator=self.get_translator,
                                                sub_list_idx=idx)
-                future_chunk.add_done_callback(callback_list_done)
+                future_chunk.add_done_callback(callback_sub_list_done)
                 future_dict = {
                     "future": future_chunk,
                     "idx": idx
@@ -227,11 +235,11 @@ class DataParser(metaclass=ForceBaseCallMeta):
                     if future_dict['future'].exception():
                         tqdm.write(
                             f"Thread {future_dict['idx']} failed, restarting thread with chunk {future_dict['idx']}")
-                        backup_future_chunk = executor.submit(self.translate_en2vi,
+                        backup_future_chunk = executor.submit(self.__translate_texts,
                                                               src_texts=sub_str_lists[future_dict['idx']],
                                                               translator=self.get_translator,
                                                               sub_list_idx=future_dict['idx'])
-                        backup_future_chunk.add_done_callback(callback_list_done)
+                        backup_future_chunk.add_done_callback(callback_sub_list_done)
                         backup_future_dict = {"future": backup_future_chunk,
                                               "idx": future_dict['idx']}
                         futures[future_dict['idx']] = backup_future_dict
@@ -243,6 +251,9 @@ class DataParser(metaclass=ForceBaseCallMeta):
             translated_list_data = [item['text_list'] for item in translated_list_data]
 
             def flatten_list(nested_list):
+                '''
+                Turn a list from [[], [], []] -> []
+                '''
                 flattened_list = []
                 for item in nested_list:
                     if isinstance(item, list):
@@ -255,10 +266,14 @@ class DataParser(metaclass=ForceBaseCallMeta):
 
             return translated_list_data
 
-    def translate_en2vi(self,
-                        src_texts: Union[List[str], str],
-                        translator: Translator = None,
-                        sub_list_idx: int=None) -> Union[List[str], str, Dict[List[str], int]]:
+    def __translate_texts(self,
+                          src_texts: Union[List[str], str],
+                          translator: Translator = None,
+                          sub_list_idx: int=None, # sub_list_idx is for pass through of index information and can be merge later by __sublist_multithread_translate
+                          ) -> Union[List[str], str, Dict[List[str], int]]:
+        '''
+        Actual place where translation take place
+        '''
         assert self.do_translate, "Please enable translate via self.do_translate"
         # This if is for multithread Translator instance
         translator_instance = deepcopy(self.translator)() if not translator else translator
@@ -278,6 +293,9 @@ class DataParser(metaclass=ForceBaseCallMeta):
                                                              dest=self.target_lang)
 
         def extract_texts(obj):
+            '''
+            Extract .text attribute from Translator object
+            '''
             if isinstance(obj, list):
                 return [extract_texts(item) for item in obj]
             else:
@@ -295,7 +313,10 @@ class DataParser(metaclass=ForceBaseCallMeta):
                             desc: str = None,
                             translator: Translator = None,
                             large_chunk: List[str] = None) -> Union[None, List[str]]:
-        """This function support translation in multithread for large dataset"""
+        '''
+        This function support translation in multithread for large dataset
+        (Does not maintain order for the final dataset)
+        '''
 
         assert self.converted_data is not None or en_data is not None or large_chunk is not None, \
             "Please implement the convert function for DataParser " \
@@ -329,7 +350,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
             chunks = [converted_data[x:x + self.max_example_per_thread] for x in
                       range(0, len(converted_data), self.max_example_per_thread)]
             tqdm.write(f"Data too large, splitting data into {num_threads} chunk, each chunk is {len(chunks[0])}"
-                       f"Processing with multithread...")
+                       f" Processing with multithread...")
 
             # Progress bar
             desc = "Translating total converted large chunk data" if large_chunk else "Translating total converted data"
@@ -354,7 +375,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
                             progress_bar.update(1)
                     else:
                         tqdm.write(f"Task failed with the following error: {future.exception()}."
-                                   f"Restarting thread when others finished")
+                                   f" Restarting thread when others finished")
                         pass
 
                 for idx, chunk in enumerate(chunks):
@@ -397,9 +418,9 @@ class DataParser(metaclass=ForceBaseCallMeta):
 
         progress_bar_desc = "Translating converted data" if not desc else f"Translating converted data {desc}"
         for example in tqdm(converted_data, desc=progress_bar_desc):
-            translated_data_example = self.translate_en2vi_advance_qa(example,
-                                                                      translator,
-                                                                      progress_idx=int(re.findall(r'\d+', desc)[0]) if desc and re.findall(r'\d+', desc) else 0)
+            translated_data_example = self.__translate_per_key(example,
+                                                               translator,
+                                                               progress_idx=int(re.findall(r'\d+', desc)[0]) if desc and re.findall(r'\d+', desc) else 0)
             translated_data.append(translated_data_example)
         if en_data: return translated_data
         if large_chunk:
@@ -436,7 +457,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
         with open(output_path, 'w', encoding='utf-8') as jfile:
             print(f"\n Saving {self.parser_name} to {output_path}... ")
             for idx, data in enumerate(tqdm(self.converted_data, desc="Writing data to file")):
-                if self.validate(self.converted_data[idx].keys(), self.target_config):
+                if self.validate(self.converted_data[idx].keys()):
                     jfile.write(json.dumps(data, ensure_ascii=False) + "\n")
             print(f"\n Total line printed: {idx + 1}")
 

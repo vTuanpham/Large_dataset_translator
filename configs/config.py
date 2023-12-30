@@ -9,7 +9,7 @@ from dataclasses import dataclass
 @dataclass
 class Config(ABC):
     """
-    Abstract config that must inherit all configs class
+    Abstract config that must be inherited by all configs class
     """
 
     qas_id: str  # Required field in all subclass
