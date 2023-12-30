@@ -94,7 +94,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
         dict_fields = self.target_config.get_keys()
         for key in dict_fields:
             assert key in keys, f"\n Invalid parser, the key '{key}' is missing from {dict_fields}\n" \
-                                f"you can adjust the fields {self.target_config.__class__.__name__} in the 'configs/*.py'" \
+                                f"you can adjust the fields {self.target_config.__name__} in the 'configs/*.py'" \
                                 f"  or fill in the missing field"
         return True
 
