@@ -6,9 +6,15 @@ on:
       - main
       - dev
       - feat/*
+
 jobs:
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: [3.8]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Check Out Code
@@ -17,7 +23,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.8  # Specify your desired Python version
+          python-version: ${{ matrix.python-version }}
 
       - name: Install Dependencies
         run: |
