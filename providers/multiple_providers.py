@@ -6,7 +6,7 @@ from .base_provider import Provider
 
 
 # https://github.com/UlionTse/translators
-# This library is not as reliable provider as googletrans, use this if you want to try out other translation services
+# This library is not as reliable of a provider as googletrans, use this if you want to try out other translation services
 class MultipleProviders(Provider):
     def __init__(self, cache: bool = False):
         self.translator = ts
@@ -48,14 +48,28 @@ class MultipleProviders(Provider):
             :return: str or dict
         """
         # This provider does not support batch translation
-        translated_data = []
         if isinstance(input_data, list):
+            translated_data = []
             for text in input_data:
                 translated_text = self.translator.translate_text(text, from_language=src, to_language=dest, **self.config)
                 translated_data.append(translated_text)
+        else:
+            translated_data = self.translator.translate_text(input_data, from_language=src, to_language=dest, **self.config)
+
         return translated_data
 
 
 if __name__ == '__main__':
     test = MultipleProviders()
     print(test.translate("Hello", src="en", dest="vi").text)
+
+    """
+    Supported languages: 
+    ['ach', 'afr', 'aka', 'alb', 'amh', 'ara', 'arg', 'arm', 'arq', 'asm', 'ast', 'auto', 'aym', 'aze', 'bak', 'bal', 'baq', 'bel', 'bem', 'ben', 'ber', 'bho', 'bis', 'bl
+i', 'bos', 'bre', 'bul', 'bur', 'cat', 'ceb', 'chr', 'cht', 'chv', 'cor', 'cos', 'cre', 'cri', 'cs', 'dan', 'de', 'div', 'el', 'en', 'eno', 'epo', 'est', 'fao', 'fil', 'fin', 'fra', 'fri', 'frm', 'frn', 'fry', 'ful', 'geo', 'gla', 'gle
+', 'glg', 'glv', 'gra', 'grn', 'guj', 'hak', 'hau', 'haw', 'heb', 'hi', 'hil', 'hkm', 'hmn', 'hrv', 'ht', 'hu', 'hup', 'ibo', 'ice', 'id', 'ido', 'iku', 'ina', 'ing', 'it', 'jav', 'jp', 'kab', 'kah', 'kal', 'kan', 'kas', 'kau', 'kin', 
+'kir', 'kli', 'kok', 'kon', 'kor', 'kur', 'lag', 'lao', 'lat', 'lav', 'lim', 'lin', 'lit', 'log', 'loj', 'los', 'ltz', 'lug', 'mac', 'mah', 'mai', 'mal', 'mao', 'mar', 'mau', 'may', 'mg', 'mlt', 'mot', 'nbl', 'nea', 'nep', 'nl', 'nno',
+ 'nob', 'nor', 'nqo', 'nya', 'oci', 'oji', 'ori', 'orm', 'oss', 'pam', 'pan', 'pap', 'ped', 'per', 'pl', 'pot', 'pt', 'pus', 'que', 'ro', 'roh', 'rom', 'ru', 'ruy', 'san', 'sco', 'sec', 'sha', 'sil', 'sin', 'sk', 'slo', 'sm', 'sme', 's
+na', 'snd', 'sol', 'som', 'sot', 'spa', 'src', 'srd', 'srp', 'sun', 'swa', 'swe', 'syr', 'tam', 'tat', 'tel', 'tet', 'tgk', 'tgl', 'th', 'tir', 'tr', 'tso', 'tua', 'tuk', 'twi', 'ukr', 'ups', 'urd', 'ven', 'vie', 'wel', 'wln', 'wol', '
+wyw', 'xho', 'yid', 'yor', 'yue', 'zaz', 'zh', 'zul']
+    """
