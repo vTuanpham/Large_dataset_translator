@@ -1,16 +1,19 @@
 import sys
-sys.path.insert(0, r'./')
+sys.path.insert(0, r'/')
 from typing import Union, List
 import translators as ts
 from .base_provider import Provider
 
 
+# https://github.com/UlionTse/translators
+# This library is not as reliable provider as googletrans, use this if you want to try out other translation services
 class MultipleProviders(Provider):
-    def __init__(self, cache: bool=False):
+    def __init__(self, cache: bool = False):
         self.translator = ts
         self.config = {
-            "translator": "bing",
-            "timeout": 5.0,
+            "translator": "baidu",
+            "timeout": 10.0,
+            "if_ignore_empty_query": True
         }
         if cache:
             _ = self.translator.preaccelerate_and_speedtest()  # Optional. Caching sessions in advance, which can help improve access speed.
@@ -44,8 +47,13 @@ class MultipleProviders(Provider):
                     :param myMemory_mode: str, default "web", choose from ("web", "api").
             :return: str or dict
         """
-
-        return self.translator.translate_text(input_data, from_language=src, to_language=dest, **self.config)
+        # This provider does not support batch translation
+        translated_data = []
+        if isinstance(input_data, list):
+            for text in input_data:
+                translated_text = self.translator.translate_text(text, from_language=src, to_language=dest, **self.config)
+                translated_data.append(translated_text)
+        return translated_data
 
 
 if __name__ == '__main__':
