@@ -3,26 +3,28 @@ import re
 import json
 import os
 import random
+import string
 import sys
 sys.path.insert(0, r'./')
 from copy import deepcopy
 
-import string
 import threading
 import warnings
+import traceback
 try:
     from google.colab import files
     IN_COLAB = True
 except ImportError:
     IN_COLAB = False
 from httpcore._exceptions import ConnectTimeout
+from translators.server import TranslatorError
 from typing import List, Dict, Union
 from abc import abstractmethod
 from tqdm.auto import tqdm
 
 from concurrent.futures import ThreadPoolExecutor
 
-from googletrans import Translator
+from providers import Provider, GoogleProvider, MultipleProviders
 
 from configs import BaseConfig, QAConfig, DialogsConfig
 from .utils import force_super_call, ForceBaseCallMeta, timeit, have_internet
@@ -47,6 +49,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
                  large_chunks_threshold: int = 20000,  # Maximum number of examples that will be distributed evenly across threads, any examples exceed this threshold will be process in queue
                  max_list_length_per_thread: int = 3,  # Maximum number of strings contain in a list in a single thread.
                                                        # if larger, split the list into sub-list and process in parallel
+                 translator: Provider = GoogleProvider,
                  source_lang: str = "en",
                  target_lang: str = "vi",
                  fail_translation_code: str="P1OP1_F"  # Fail code for unexpected fail translation and can be removed
@@ -84,10 +87,10 @@ class DataParser(metaclass=ForceBaseCallMeta):
 
             self.converted_data_translated = None
 
-            self.translator = Translator
+            self.translator = translator
 
     @property
-    def get_translator(self) -> Translator:
+    def get_translator(self) -> Provider:
         return deepcopy(self.translator)()
 
     @staticmethod
@@ -146,7 +149,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
         print(f"\nTotal data left after filtering fail translation: {len(post_validated_translate_data)}\n")
         self.converted_data_translated = post_validated_translate_data
 
-    def __translate_per_key(self, example: Dict, translator: Translator = None, progress_idx: int = 0) -> Dict:
+    def __translate_per_key(self, example: Dict, translator: Provider = None, progress_idx: int = 0) -> Dict:
         '''
         This function loop through each key of one example and send to __translate_texts if the value of the key is
         under a certain threshold. If exceeded, then send to __sublist_multithread_translate
@@ -274,7 +277,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
 
     def __translate_texts(self,
                           src_texts: Union[List[str], str],
-                          translator: Translator = None,
+                          translator: Provider = None,
                           sub_list_idx: int=None, # sub_list_idx is for pass through of index information and can be merge later by __sublist_multithread_translate
                           ) -> Union[List[str], str, Dict[List[str], int]]:
         '''
@@ -287,7 +290,14 @@ class DataParser(metaclass=ForceBaseCallMeta):
 
         try:
             target_texts = translator_instance.translate(src_texts, src=self.source_lang, dest=self.target_lang)
-        except TypeError:
+        except (TypeError, TranslatorError):
+        # except Exception as exc:
+            # TODO: Move Error except to each individual Providers
+
+            # Log the full stack trace of the exception
+            # traceback_str = ''.join(traceback.format_exception(None, exc, exc.__traceback__))
+            # tqdm.write(f"An exception occurred:\n{traceback_str}")
+
             # TypeError likely due to gender-specific translation, which has no fix yet. Please refer to
             # ssut/py-googletrans#260 for more info
             if sub_list_idx is None:
@@ -319,7 +329,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
     def translate_converted(self,
                             en_data: List[str] = None,
                             desc: str = None,
-                            translator: Translator = None,
+                            translator: Provider = None,
                             large_chunk: List[str] = None) -> Union[None, List[str]]:
         '''
         This function support translation in multithread for large dataset

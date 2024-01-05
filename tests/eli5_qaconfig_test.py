@@ -35,14 +35,18 @@ class TestELI5ValQAConfig(unittest.TestCase):
 
     def step5(self):
         try:
-            self.translated_dataset = load_dataset("json", data_files=self.output_path, keep_in_memory=False)
+            self.parsed_dataset = load_dataset("json", data_files=self.output_path, keep_in_memory=False)
+            self.translated_dataset = load_dataset("json", data_files=self.output_path_translated, keep_in_memory=False)
         except Exception as e:
             raise SyntaxError("Invalid syntax for save function, the data output must be in the form of"
                               f"line-delimited json,\n Error message: {e}")
 
     def step6(self):
-        self.assertEqual(len(self.translated_dataset['train']), len(self.parser.converted_data),
-                         "The parsed translated dataset does not match the length of the parsed dataset")
+        self.assertEqual(len(self.parsed_dataset['train']), len(self.parser.converted_data),
+                         msg="The parsed dataset does not match the length of the parsed dataset")
+        self.assertAlmostEqualInt(len(self.translated_dataset['train']), len(self.parser.converted_data),
+                                  msg="The parsed translated dataset fail too much and does not meet the length criteria of the parsed dataset",
+                                  tolerance=50)
 
     def step7(self):
         if os.path.exists(self.output_path):
@@ -62,6 +66,16 @@ class TestELI5ValQAConfig(unittest.TestCase):
                 step()
             except Exception as e:
                 self.fail(f"{step} failed ({type(e)}: {e})")
+
+    def assertAlmostEqualInt(self, int1, int2, tolerance=1, msg=None):
+        """
+        Asserts that two integers are almost equal within a specified tolerance range.
+        """
+        if abs(int1 - int2) > tolerance:
+            standard_msg = f"{int1} and {int2} are not almost equal within a tolerance of {tolerance}."
+            if msg:
+                standard_msg = f"{msg}: {standard_msg}"
+            raise self.failureException(standard_msg)
 
 
 if __name__ == '__main__':
