@@ -288,26 +288,10 @@ class DataParser(metaclass=ForceBaseCallMeta):
         # This if is for multithread Translator instance
         translator_instance = deepcopy(self.translator)() if not translator else translator
 
-        try:
-            target_texts = translator_instance.translate(src_texts, src=self.source_lang, dest=self.target_lang)
-        except (TypeError, TranslatorError):
-        # except Exception as exc:
-            # TODO: Move Error except to each individual Providers
-
-            # Log the full stack trace of the exception
-            # traceback_str = ''.join(traceback.format_exception(None, exc, exc.__traceback__))
-            # tqdm.write(f"An exception occurred:\n{traceback_str}")
-
-            # TypeError likely due to gender-specific translation, which has no fix yet. Please refer to
-            # ssut/py-googletrans#260 for more info
-            if sub_list_idx is None:
-                target_texts = translator_instance.translate(self.fail_translation_code,
-                                                             src=self.source_lang,
-                                                             dest=self.target_lang)
-            else:
-                target_texts = translator_instance.translate([self.fail_translation_code, self.fail_translation_code],
-                                                             src=self.source_lang,
-                                                             dest=self.target_lang)
+        target_texts = translator_instance.translate(src_texts,
+                                                     src=self.source_lang,
+                                                     dest=self.target_lang,
+                                                     fail_translation_code=self.fail_translation_code)
 
         def extract_texts(obj):
             '''

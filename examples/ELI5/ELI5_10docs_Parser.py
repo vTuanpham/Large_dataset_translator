@@ -6,14 +6,15 @@ from tqdm.auto import tqdm
 
 from configs import BaseConfig
 from translator import DataParser
-
+from providers import Provider, GoogleProvider, MultipleProviders
 
 PARSER_NAME = "ELI5_val"
 
 
 class ELI5Val(DataParser):
     def __init__(self, file_path: str, output_path: str, target_lang: str="vi",
-                 max_example_per_thread=400, large_chunks_threshold=20000):
+                 max_example_per_thread=400, large_chunks_threshold=20000,
+                 translator: Provider = GoogleProvider):
         super().__init__(file_path, output_path,
                          parser_name=PARSER_NAME,
                          target_config=BaseConfig,  # The data config to be validated to check if self implement "convert" function is correct or not,
@@ -22,7 +23,8 @@ class ELI5Val(DataParser):
                          do_translate=True,
                          target_lang=target_lang,
                          max_example_per_thread=max_example_per_thread,
-                         large_chunks_threshold=large_chunks_threshold)
+                         large_chunks_threshold=large_chunks_threshold,
+                         translator=translator)
 
         self.max_ctxs = 5
 
