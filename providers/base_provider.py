@@ -12,10 +12,15 @@ class Provider(ABC):
         self.translator = None
 
     @abstractmethod
-    def _do_translate(self, input_data: Union[str, List[str]], src: str, dest: str, **kwargs) -> Union[str, List[str], Any]:
+    def _do_translate(self, input_data: Union[str, List[str]],
+                      src: str, dest: str,
+                      fail_translation_code:str = "P1OP1_F",
+                      **kwargs) -> Union[str, List[str], Any]:
         raise NotImplemented(" The function _do_translate has not been implemented.")
 
-    def translate(self, input_data: Union[str, List[str]], src: str, dest: str) -> Union[SimpleNamespace, List[SimpleNamespace]]:
+    def translate(self, input_data: Union[str, List[str]],
+                  src: str, dest: str,
+                  fail_translation_code: str="P1OP1_F") -> Union[SimpleNamespace, List[SimpleNamespace]]:
         """
         Translate text input_data from a language to another language
         :param input_data: The input_data (Can be string or list of strings)
@@ -35,7 +40,9 @@ class Provider(ABC):
         assert self.translator, "Please assign the translator object instance to self.translator"
 
         # Perform the translation
-        translated_instance = self._do_translate(input_data, src=src, dest=dest)
+        translated_instance = self._do_translate(input_data,
+                                                 src=src, dest=dest,
+                                                 fail_translation_code=fail_translation_code)
 
         # Wrap non-list objects in SimpleNamespace if they don't have a 'text' attribute
         if not isinstance(translated_instance, list):

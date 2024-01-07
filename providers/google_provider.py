@@ -11,7 +11,10 @@ class GoogleProvider(Provider):
     def __init__(self):
         self.translator = Translator()
 
-    def _do_translate(self, input_data: Union[str, List[str]], src: str, dest: str, **kwargs) -> Union[str, List[str], Any]:
+    def _do_translate(self, input_data: Union[str, List[str]],
+                      src: str, dest: str,
+                      fail_translation_code:str = "P1OP1_F", # Pass in this code to replace the input_data if the exception is *unavoidable*, any example that contain this will be remove post translation
+                      **kwargs) -> Union[str, List[str]]:
         """
         translate(text, dest='en', src='auto', **kwargs)
             Translate text from source language to destination language
@@ -28,7 +31,15 @@ class GoogleProvider(Provider):
             Return type: list (when a list is passed) else str
         """
 
-        return self.translator.translate(input_data, src=src, dest=dest)
+        data_type = "list" if isinstance(input_data, list) else "str"
+
+        try:
+            return self.translator.translate(input_data, src=src, dest=dest)
+        # TypeError likely due to gender-specific translation, which has no fix yet. Please refer to
+        # ssut/py-googletrans#260 for more info
+        except TypeError:
+            if data_type == "list": return self.translator.translate([fail_translation_code, fail_translation_code], src=src, dest=dest)
+            return self.translator.translate(fail_translation_code, src=src, dest=dest)
 
 
 if __name__ == '__main__':

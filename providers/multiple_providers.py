@@ -2,6 +2,7 @@ import sys
 sys.path.insert(0, r'/')
 from typing import Union, List
 import translators as ts
+from translators.server import TranslatorError
 from .base_provider import Provider
 
 
@@ -18,7 +19,10 @@ class MultipleProviders(Provider):
         if cache:
             _ = self.translator.preaccelerate_and_speedtest()  # Optional. Caching sessions in advance, which can help improve access speed.
 
-    def _do_translate(self, input_data: Union[str, List[str]], src: str, dest: str) -> Union[str, List[str]]:
+    def _do_translate(self, input_data: Union[str, List[str]],
+                      src: str, dest: str,
+                      fail_translation_code:str = "P1OP1_F", # Pass in this code to replace the input_data if the exception is unavoidable, any example that contain this will be remove post translation
+                      **kwargs) -> Union[str, List[str]]:
         """
         translate_text(query_text: str, translator: str = 'bing', from_language: str = 'auto', to_language: str = 'en', **kwargs) -> Union[str, dict]
             :param query_text: str, must.
@@ -47,21 +51,28 @@ class MultipleProviders(Provider):
                     :param myMemory_mode: str, default "web", choose from ("web", "api").
             :return: str or dict
         """
-        # This provider does not support batch translation
-        if isinstance(input_data, list):
-            translated_data = []
-            for text in input_data:
-                translated_text = self.translator.translate_text(text, from_language=src, to_language=dest, **self.config)
-                translated_data.append(translated_text)
-        else:
-            translated_data = self.translator.translate_text(input_data, from_language=src, to_language=dest, **self.config)
+
+        data_type = "list" if isinstance(input_data, list) else "str"
+
+        try:
+            # This provider does not support batch translation
+            if data_type == "list":
+                translated_data = []
+                for text in input_data:
+                    translated_text = self.translator.translate_text(text, from_language=src, to_language=dest, **self.config)
+                    translated_data.append(translated_text)
+            else:
+                translated_data = self.translator.translate_text(input_data, from_language=src, to_language=dest, **self.config)
+        except TranslatorError:
+            if data_type == "list": return self.translator.translate_text([fail_translation_code, fail_translation_code], from_language=src, to_language=dest, **self.config)
+            return self.translator.translate_text(fail_translation_code, from_language=src, to_language=dest, **self.config)
 
         return translated_data
 
 
 if __name__ == '__main__':
     test = MultipleProviders()
-    print(test.translate("Hello", src="en", dest="vi").text)
+    print(test.translate("Hello", src="en", dest="vie").text)
 
     """
     Supported languages: 
