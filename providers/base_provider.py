@@ -1,6 +1,5 @@
-from typing import Union, List, Any
+from typing import Union, List
 from abc import ABC, abstractmethod
-from types import SimpleNamespace
 
 
 class Provider(ABC):
@@ -15,18 +14,19 @@ class Provider(ABC):
     def _do_translate(self, input_data: Union[str, List[str]],
                       src: str, dest: str,
                       fail_translation_code:str = "P1OP1_F",
-                      **kwargs) -> Union[str, List[str], Any]:
+                      **kwargs) -> Union[str, List[str]]:
         raise NotImplemented(" The function _do_translate has not been implemented.")
 
     def translate(self, input_data: Union[str, List[str]],
                   src: str, dest: str,
-                  fail_translation_code: str="P1OP1_F") -> Union[SimpleNamespace, List[SimpleNamespace]]:
+                  fail_translation_code: str="P1OP1_F") -> Union[str, List[str]]:
         """
         Translate text input_data from a language to another language
         :param input_data: The input_data (Can be string or list of strings)
         :param src: The source lang of input_data
         :param dest: The target lang you want input_data to be translated
-        :return: SimpleNamespace object or list of SimpleNamespace objects with 'text' attribute
+        :param fail_translation_code: The code that can be use for unavoidable translation error and can be remove post translation
+        :return: str or list of str
         """
 
         # Type check for input_data
@@ -44,13 +44,10 @@ class Provider(ABC):
                                                  src=src, dest=dest,
                                                  fail_translation_code=fail_translation_code)
 
-        # Wrap non-list objects in SimpleNamespace if they don't have a 'text' attribute
-        if not isinstance(translated_instance, list):
-            if not hasattr(translated_instance, 'text'):
-                return SimpleNamespace(text=translated_instance)
-        else:
-            # Wrap each item in the list in SimpleNamespace if the item doesn't have a 'text' attribute
-            return [SimpleNamespace(text=item) if not hasattr(item, 'text') else item for item in translated_instance]
+        assert type(input_data) == type(translated_instance),\
+            f" The function self._do_translate() return mismatch datatype from the input_data," \
+            f" expected {type(input_data)} from self._do_translate() but got {type(translated_instance)}"
 
         return translated_instance
+
 

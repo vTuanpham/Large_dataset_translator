@@ -17,7 +17,6 @@ try:
 except ImportError:
     IN_COLAB = False
 from httpcore._exceptions import ConnectTimeout
-from translators.server import TranslatorError
 from typing import List, Dict, Union
 from abc import abstractmethod
 from tqdm.auto import tqdm
@@ -25,7 +24,6 @@ from tqdm.auto import tqdm
 from concurrent.futures import ThreadPoolExecutor
 
 from providers import Provider, GoogleProvider, MultipleProviders
-
 from configs import BaseConfig, QAConfig, DialogsConfig
 from .utils import force_super_call, ForceBaseCallMeta, timeit, have_internet
 from .filters import have_code, have_re_code
@@ -52,7 +50,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
                  translator: Provider = GoogleProvider,
                  source_lang: str = "en",
                  target_lang: str = "vi",
-                 fail_translation_code: str="P1OP1_F"  # Fail code for unexpected fail translation and can be removed
+                 fail_translation_code: str="P1OP1_F"  # Fail code for *expected* fail translation and can be removed
                                                        # post-translation
                  ) -> None:
 
@@ -293,21 +291,6 @@ class DataParser(metaclass=ForceBaseCallMeta):
                                                      dest=self.target_lang,
                                                      fail_translation_code=self.fail_translation_code)
 
-        def extract_texts(obj):
-            '''
-            Extract .text attribute from Translator object
-            '''
-
-            if isinstance(obj, list):
-                return [extract_texts(item) for item in obj]
-            else:
-                try:
-                    return obj.text
-                except AttributeError:
-                    return obj
-
-        target_texts = extract_texts(target_texts)
-
         return {'text_list': target_texts, 'key': sub_list_idx} if sub_list_idx is not None else target_texts
 
     def translate_converted(self,
@@ -354,7 +337,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
 
             # Progress bar
             desc = "Translating total converted large chunk data" if large_chunk else "Translating total converted data"
-            progress_bar = tqdm(total=math.ceil(num_threads), desc=desc)
+            progress_bar = tqdm(total=math.ceil(num_threads), desc=desc, position=math.ceil(num_threads)+1)
 
             with ThreadPoolExecutor(max_workers=num_threads) as executor:
                 futures = []

@@ -1,5 +1,5 @@
 import sys
-from typing import Union, List, Any
+from typing import Union, List
 sys.path.insert(0, r'/')
 from googletrans import Translator
 from .base_provider import Provider
@@ -10,6 +10,19 @@ from .base_provider import Provider
 class GoogleProvider(Provider):
     def __init__(self):
         self.translator = Translator()
+
+    def extract_texts(self, obj):
+        '''
+        Extract .text attribute from Translator object
+        '''
+
+        if isinstance(obj, list):
+            return [self.extract_texts(item) for item in obj]
+        else:
+            try:
+                return obj.text
+            except AttributeError:
+                return obj
 
     def _do_translate(self, input_data: Union[str, List[str]],
                       src: str, dest: str,
@@ -28,20 +41,21 @@ class GoogleProvider(Provider):
                 Return type:
                 Translated
 
-            Return type: list (when a list is passed) else str
+            Return type: list (when a list is passed) else Translated object
         """
 
         data_type = "list" if isinstance(input_data, list) else "str"
 
         try:
-            return self.translator.translate(input_data, src=src, dest=dest)
+            return self.extract_texts(self.translator.translate(input_data, src=src, dest=dest))
         # TypeError likely due to gender-specific translation, which has no fix yet. Please refer to
         # ssut/py-googletrans#260 for more info
         except TypeError:
-            if data_type == "list": return self.translator.translate([fail_translation_code, fail_translation_code], src=src, dest=dest)
-            return self.translator.translate(fail_translation_code, src=src, dest=dest)
+            if data_type == "list": return [fail_translation_code, fail_translation_code]
+            return fail_translation_code
 
 
 if __name__ == '__main__':
     test = GoogleProvider()
-    print(test.translate("Hello", src="en", dest="vi").text)
+    print(test.translate(["Hello", "How are you today ?"], src="en", dest="vi"))
+    print(test.translate("Hello", src="en", dest="vi"))

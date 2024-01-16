@@ -64,15 +64,16 @@ class MultipleProviders(Provider):
             else:
                 translated_data = self.translator.translate_text(input_data, from_language=src, to_language=dest, **self.config)
         except TranslatorError:
-            if data_type == "list": return self.translator.translate_text([fail_translation_code, fail_translation_code], from_language=src, to_language=dest, **self.config)
-            return self.translator.translate_text(fail_translation_code, from_language=src, to_language=dest, **self.config)
+            if data_type == "list": return [fail_translation_code, fail_translation_code]
+            return fail_translation_code
 
         return translated_data
 
 
 if __name__ == '__main__':
     test = MultipleProviders()
-    print(test.translate("Hello", src="en", dest="vie").text)
+    print(test.translate(["Hello", "How are you today ?"], src="en", dest="vie"))
+    print(test.translate("Hello", src="en", dest="vie"))
 
     """
     Supported languages: 
