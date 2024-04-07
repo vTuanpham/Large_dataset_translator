@@ -12,8 +12,6 @@
   </a>
 </p>
 
-![Test translation eli5 german](https://github.com/vTuanpham/Large_dataset_translator/actions/workflows/test_translate.yml/badge.svg?event=push)
-
 The Large Dataset Translator is a robust solution crafted to effectively translate sizable datasets into diverse languages. It provides a smooth and parallelized translation process, guaranteeing swift outcomes without the need for an API key. The tool facilitates multithreaded processing, allowing users to translate extensive datasets in significantly less time. Additionally, it features an automatic fail-restart mechanism, ensuring the seamless continuation of the translation process in case of any interruptions. 
 
 ### Features
@@ -39,6 +37,10 @@ The Large Dataset Translator is a robust solution crafted to effectively transla
 Here's a demo of the DataParser class, translating 1507 rows of text to Korean in under 2 minutes:
 
 ![Translation demo](assets/Translate_demo.gif)
+
+The translation split logic:
+![Translation split logic](assets/Translation_pipe.drawio.pdf.png)
+
 
 ### Setup
 
