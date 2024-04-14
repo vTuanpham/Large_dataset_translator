@@ -36,7 +36,7 @@ The Large Dataset Translator is a robust solution crafted to effectively transla
 
 Here's a demo of the DataParser class, translating 1507 rows of text to Korean in under 2 minutes:
 
-![Translation demo](assets/Translate_demo.gif)
+![Translation demo](assets/Translate_demo_vs.gif)
 
 The translation split logic:
 ![Translation split logic](assets/Translation_pipe.drawio.pdf.png)
