@@ -7,10 +7,6 @@ from dataclasses import dataclass, asdict, fields
 
 @dataclass
 class CorpusConfig(Config):
-    """
-    A single training/test example for base config.
-    """
-    system_prompt: str
 
     orig_corpus_texts: str = None
     corpus_lengths: int = None
@@ -23,7 +19,6 @@ class CorpusConfig(Config):
     def __repr__(self) -> str:
         s = ""
         s += f"\n Text id: {self.qas_id}"
-        s += f"\n System prompt: {self.system_prompt}"
         if self.orig_corpus_texts:
             s += f"\n Text: {self.orig_corpus_texts}"
             s += f"\n Length: {self.corpus_lengths}"
