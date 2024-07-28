@@ -24,7 +24,7 @@ from tqdm.auto import tqdm
 from concurrent.futures import ThreadPoolExecutor
 
 from providers import Provider, GoogleProvider, MultipleProviders
-from configs import BaseConfig, QAConfig, DialogsConfig
+from configs import BaseConfig, QAConfig, DialogsConfig, CorpusConfig
 from .utils import force_super_call, ForceBaseCallMeta, timeit, have_internet
 from .filters import have_code, have_re_code
 
@@ -38,7 +38,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
                  output_dir: str,
                  parser_name: str,
                  target_fields: List[str],
-                 target_config: Union[BaseConfig, QAConfig, DialogsConfig],
+                 target_config: Union[BaseConfig, QAConfig, DialogsConfig, CorpusConfig],
                  do_translate: bool = False,
                  enable_sub_task_thread: bool = True,  # Enable splitting a large list into sublist if a list of one example is too large to process
                                                        # This argument go with max_list_length_per_thread
