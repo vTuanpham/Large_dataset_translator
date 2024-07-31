@@ -23,8 +23,9 @@ from tqdm.auto import tqdm
 
 from concurrent.futures import ThreadPoolExecutor
 
-from providers import Provider, GoogleProvider, MultipleProviders
-from configs import BaseConfig, QAConfig, DialogsConfig, CorpusConfig
+from providers import *
+from configs import *
+from .callbacks import *
 from .utils import force_super_call, ForceBaseCallMeta, timeit, have_internet
 from .filters import have_code, have_re_code
 
@@ -38,7 +39,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
                  output_dir: str,
                  parser_name: str,
                  target_fields: List[str],
-                 target_config: Union[BaseConfig, QAConfig, DialogsConfig, CorpusConfig],
+                 target_config: Config,
                  do_translate: bool = False,
                  enable_sub_task_thread: bool = True,  # Enable splitting a large list into sublist if a list of one example is too large to process
                                                        # This argument go with max_list_length_per_thread
@@ -50,8 +51,9 @@ class DataParser(metaclass=ForceBaseCallMeta):
                  translator: Provider = GoogleProvider,
                  source_lang: str = "en",
                  target_lang: str = "vi",
-                 fail_translation_code: str="P1OP1_F"  # Fail code for *expected* fail translation and can be removed
-                                                       # post-translation
+                 fail_translation_code: str="P1OP1_F",  # Fail code for *expected* fail translation and can be removed
+                                                        # post-translation,
+                 parser_callbacks: List[ParserCallback] = None  # Callback function to be called after translation
                  ) -> None:
 
         self.data_read = None
@@ -65,6 +67,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
         self.target_config = target_config
 
         self.do_translate = do_translate
+        self.parser_callbacks = parser_callbacks
 
         if self.do_translate:
             self.fail_translation_code = fail_translation_code
@@ -86,6 +89,15 @@ class DataParser(metaclass=ForceBaseCallMeta):
             self.converted_data_translated = None
 
             self.translator = translator
+
+        if self.parser_callbacks:
+            if not isinstance(self.parser_callbacks, list):
+                self.parser_callbacks = [self.parser_callbacks]
+            print(f"Parser {self.parser_name} has {len(self.parser_callbacks)} callbacks")
+            self.parser_callbacks = [callback() for callback in self.parser_callbacks]
+            for callback in self.parser_callbacks:                
+                assert isinstance(callback, ParserCallback), "Please provide a valid callback function"
+                callback.on_finish_init(self)
 
     @property
     def get_translator(self) -> Provider:
@@ -158,7 +170,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
         for key in keys:
             if key in self.target_fields:
                 type = "str" if isinstance(example[key], str) else "list"
-                if example[key] == "":
+                if example[key] == "" or example[key] is None:
                     continue
                 if type == "list":
                     for data in example[key]:
@@ -418,6 +430,9 @@ class DataParser(metaclass=ForceBaseCallMeta):
     def convert(self) -> Union[List[Dict], None]:
         assert self.data_read is not None, "Please implement the read function for DataParser" \
                                            " and assign data to self.data_read"
+        if self.parser_callbacks:
+            for callback in self.parser_callbacks:
+                callback.on_start_convert(self)
         pass
 
     @abstractmethod
@@ -434,6 +449,13 @@ class DataParser(metaclass=ForceBaseCallMeta):
         Save the correct format that pyarrow supported, which is "line-delimited JSON" and can be load by
         huggingface-datasets load_datasets function
         '''
+        if self.parser_callbacks:
+            for callback in self.parser_callbacks:
+                callback.on_finish_convert(self)
+            
+            for callback in self.parser_callbacks:
+                callback.on_start_save(self)
+
         output_path = os.path.join(self.output_dir, f"{self.parser_name}.json")
         with open(output_path, 'w', encoding='utf-8') as jfile:
             print(f"\n Saving {self.parser_name} to {output_path}... ")
@@ -441,16 +463,29 @@ class DataParser(metaclass=ForceBaseCallMeta):
                 if self.validate(self.converted_data[idx].keys()):
                     jfile.write(json.dumps(data, ensure_ascii=False) + "\n")
             print(f"\n Total line printed: {idx + 1}")
+        
+        if self.parser_callbacks:
+            for callback in self.parser_callbacks:
+                callback.on_finish_save(self)
 
         if IN_COLAB:
             print(f"\n Downloading converted data to local machine...")
             files.download(output_path)
 
         if self.do_translate:
+            if self.parser_callbacks:
+                for callback in self.parser_callbacks:
+                    callback.on_start_translate(self)
+
             self.pre_translate_validate()
             self.translate_converted()
-            self.post_translate_validate()
+            self.post_translate_validate()       
             assert self.converted_data_translated is not None, "Converted data haven't been translated yet!"
+            
+            if self.parser_callbacks:
+                for callback in self.parser_callbacks:
+                    callback.on_finish_translate(self)
+                    
             output_translated_path = os.path.join(self.output_dir,
                                                   f"{self.parser_name}_translated_{self.target_lang}.json")
             with open(output_translated_path, 'w', encoding='utf-8') as jfile:

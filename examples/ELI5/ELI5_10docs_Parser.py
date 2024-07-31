@@ -6,7 +6,8 @@ from tqdm.auto import tqdm
 
 from configs import BaseConfig
 from translator import DataParser
-from providers import Provider, GoogleProvider, MultipleProviders
+from translator import VerboseCallback
+from providers import *
 
 PARSER_NAME = "ELI5_val"
 
@@ -15,16 +16,23 @@ class ELI5Val(DataParser):
     def __init__(self, file_path: str, output_path: str, target_lang: str="vi",
                  max_example_per_thread=400, large_chunks_threshold=20000,
                  translator: Provider = GoogleProvider):
-        super().__init__(file_path, output_path,
-                         parser_name=PARSER_NAME,
-                         target_config=BaseConfig,  # The data config to be validated to check if self implement "convert" function is correct or not,
-                                                    # you must map the data form to the correct fields of the @dataclass in the configs/base_config.py
-                         target_fields=['question_text', 'orig_answer_texts'],     # The data fields to be translated (The fields belong to BaseConfig)
-                         do_translate=True,
-                         target_lang=target_lang,
-                         max_example_per_thread=max_example_per_thread,
-                         large_chunks_threshold=large_chunks_threshold,
-                         translator=translator)
+        super().__init__(
+            file_path,
+            output_path,
+            parser_name=PARSER_NAME,
+            target_config=BaseConfig,  # The data config to be validated to check if self implement "convert" function is correct or not,
+            # you must map the data form to the correct fields of the @dataclass in the configs/base_config.py
+            target_fields=[
+                "question_text",
+                "orig_answer_texts",
+            ],  # The data fields to be translated (The fields belong to BaseConfig)
+            do_translate=True,
+            target_lang=target_lang,
+            max_example_per_thread=max_example_per_thread,
+            large_chunks_threshold=large_chunks_threshold,
+            translator=translator,
+            parser_callbacks=[VerboseCallback],
+        )
 
         self.max_ctxs = 5
 
@@ -130,7 +138,7 @@ if __name__ == '__main__':
                               r"examples/ELI5",
                               max_example_per_thread=100,
                               large_chunks_threshold=1000,
-                              target_lang="ru")
+                              target_lang="ko")
     eli5_val_parser.read()
     eli5_val_parser.convert()
     eli5_val_parser.save

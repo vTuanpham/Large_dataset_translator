@@ -21,15 +21,17 @@ def code_likelihood_score(text: str) -> Tuple[int, list]:
         '[', ']', '<text>', '</', '<source>', '</source>' , '</text>', 'sql', 'select', 'from' , 'table', 'union', 'group' ,
         'string', '()', 'Hello, world!', 'C# code', 'python code', 'import re', 'object', 'ABC', 'Ruby', 'regex', 'println'
     ]
-    text = text.lower()  # Convert the text to lowercase for case-insensitive comparison
-    found_elements = []
-    for element in code_elements:
-        element = element.lower()  # Convert elements to lowercase for case-insensitive comparison
-        matches = re.finditer(rf'\b{re.escape(element)}\b', text)
-        found_elements.extend([match.group() for match in matches])
-    score += len(found_elements) # / (len(text.split(" ")) * 0.1)
+    if text and isinstance(text, str):
+        text = text.lower()  # Convert the text to lowercase for case-insensitive comparison
+        found_elements = []
+        for element in code_elements:
+            element = element.lower()  # Convert elements to lowercase for case-insensitive comparison
+            matches = re.finditer(rf'\b{re.escape(element)}\b', text)
+            found_elements.extend([match.group() for match in matches])
+        score += len(found_elements) # / (len(text.split(" ")) * 0.1)
 
-    return score, found_elements
+        return score, found_elements
+    return score, []
 
 
 def have_code(text: Union[str, List[str]], threshold: int=8) -> Tuple[bool, int, list]:

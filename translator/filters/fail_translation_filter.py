@@ -8,7 +8,7 @@ def have_re_code(text: Union[str, List[str]], code: str="P1OP1_F") -> bool:
         for str_text in text:
             if code in str_text: is_found = True
     else:
-        if code in text: is_found = True
+        if text is not None and code in text: is_found = True
 
     return is_found
 
