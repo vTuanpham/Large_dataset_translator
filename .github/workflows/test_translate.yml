@@ -2,10 +2,9 @@ name: Unit Tests
 
 on:
   push:
+    # Check on all branches
     branches:
-      - main
-      - dev
-      - feat/*
+      - '*'
   schedule:
     - cron: '0 0 */14 * *' # Runs every 14 days
 
@@ -30,6 +29,7 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install -r requirements.txt
+          pip install -r httpx==1.0.0.beta0 --force-reinstall
         working-directory: ./
 
       - name: Run Unit Tests

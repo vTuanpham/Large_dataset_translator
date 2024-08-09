@@ -58,6 +58,10 @@ source trans-env/bin/activate
   
 # Install required packages
 pip install -r requirements.txt
+
+# Install httpx
+pip install -r httpx==1.0.0.beta0 --force-reinstall # Required for both google trans and groq
+
 ```
 ##### Google Colab
 ```sh
@@ -66,6 +70,9 @@ pip install -r requirements.txt
 %cd Large_dataset_translator
 
 %pip install -r requirements.txt
+
+# Install httpx
+%pip install -r httpx==1.0.0.beta0 --force-reinstall # Required for both google trans and groq
 ```
 ### Testing
 Run the provided test script to ensure the tool works correctly. This should take about 10-20 minutes on a local machine or 5-10 minutes on Colab.
