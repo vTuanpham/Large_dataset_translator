@@ -82,7 +82,7 @@ class DataParser(metaclass=ForceBaseCallMeta):
             # target_fields value can only be string or list of string
             target_type_hints = self.target_config.__annotations__
             for key in self.target_fields:
-                assert target_type_hints[key] in [str, List[str]], \
+                assert target_type_hints[key] in [str, List[str], list], \
                     f"Invalid target field type to be translated, the field {key} must be either string or list of string, but got {target_type_hints[key].__name__}"
 
             self.no_translated_code = no_translated_code
