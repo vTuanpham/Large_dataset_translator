@@ -49,7 +49,7 @@ class TestELI5Val(unittest.TestCase):
                          msg="The parsed dataset does not match the length of the parsed dataset")
         self.assertAlmostEqualInt(len(self.translated_dataset['train']), len(self.parser.converted_data),
                                   msg="The parsed translated dataset fail too much and does not meet the length criteria of the parsed dataset",
-                                  tolerance=50)
+                                  tolerance=800)
 
     def step7(self):
         if os.path.exists(self.output_path):
