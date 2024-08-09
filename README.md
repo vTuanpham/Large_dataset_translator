@@ -60,7 +60,7 @@ source trans-env/bin/activate
 pip install -r requirements.txt
 
 # Install httpx
-pip install -r httpx==1.0.0.beta0 --force-reinstall # Required for both google trans and groq
+pip install httpx==1.0.0.beta0 --force-reinstall # Required for both google trans and groq
 
 ```
 ##### Google Colab
@@ -72,7 +72,7 @@ pip install -r httpx==1.0.0.beta0 --force-reinstall # Required for both google t
 %pip install -r requirements.txt
 
 # Install httpx
-%pip install -r httpx==1.0.0.beta0 --force-reinstall # Required for both google trans and groq
+%pip install httpx==1.0.0.beta0 --force-reinstall # Required for both google trans and groq
 ```
 ### Testing
 Run the provided test script to ensure the tool works correctly. This should take about 10-20 minutes on a local machine or 5-10 minutes on Colab.

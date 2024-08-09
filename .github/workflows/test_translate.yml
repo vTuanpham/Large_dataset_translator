@@ -29,7 +29,7 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install -r requirements.txt
-          pip install -r httpx==1.0.0.beta0 --force-reinstall
+          pip install httpx==1.0.0.beta0 --force-reinstall
         working-directory: ./
 
       - name: Run Unit Tests
