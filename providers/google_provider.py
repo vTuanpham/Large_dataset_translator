@@ -2,8 +2,11 @@ import sys
 from typing import Union, List
 sys.path.insert(0, r'/')
 from googletrans import Translator
-from .base_provider import Provider
 
+try:
+    from .base_provider import Provider
+except ImportError:
+    from base_provider import Provider
 
 # https://github.com/ssut/py-googletrans
 # This is the best reliable provider, as this has access to API call instead of using the crawling method

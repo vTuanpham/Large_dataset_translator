@@ -2,3 +2,6 @@ googletrans==3.1.0a0
 translators
 datasets
 tqdm==4.66.1
+groq
+httpx==1.0.0.beta0 # Required for both google trans and groq
+fuzzywuzzy

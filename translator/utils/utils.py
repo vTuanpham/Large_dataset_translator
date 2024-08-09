@@ -31,3 +31,5 @@ def have_internet(host="8.8.8.8", port=53, timeout=3) -> bool:
     except socket.error as ex:
         print(ex)
         return False
+    
+
