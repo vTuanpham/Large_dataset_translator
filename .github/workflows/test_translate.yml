@@ -29,7 +29,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install -r requirements.txt
+          pip install -r requirements.txt --ignore-installed --no-deps
         working-directory: ./
 
       - name: Run Unit Tests
