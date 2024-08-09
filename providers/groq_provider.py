@@ -17,17 +17,18 @@ except ImportError:
     from utils import *
 
 
-try:
-    os.environ["GROQ_API_KEY"]
-except KeyError:
-    raise KeyError("Please set the environment variable GROQ_API_KEY")
-
 # Max list length of 5, cache all prompt and remove old prompt if the length is greater than 5, fuzzy match the current prompt with the cache prompt and return the fail_translation_code if the similarity is greater than 0.8
 CACHE_PROMPT = []
 
 
 class GroqProvider(Provider):
     def __init__(self):
+
+        try:
+            os.environ["GROQ_API_KEY"]
+        except KeyError:
+            raise KeyError("Please set the environment variable GROQ_API_KEY")
+
         self.groq_client = Groq(
             api_key=os.environ.get("GROQ_API_KEY"),
         )
