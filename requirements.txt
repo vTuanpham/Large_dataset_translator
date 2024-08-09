@@ -3,4 +3,5 @@ translators
 datasets
 tqdm==4.66.1
 groq
+pydantic
 fuzzywuzzy
