@@ -78,6 +78,13 @@ class DataParser(metaclass=ForceBaseCallMeta):
             self.target_fields = target_fields
             assert set(self.target_fields).issubset(set(self.target_config.get_keys())), \
                 f"The target fields {self.target_fields} do not exist in the target config {self.target_config.get_keys()}"
+            
+            # target_fields value can only be string or list of string
+            target_type_hints = self.target_config.__annotations__
+            for key in self.target_fields:
+                assert target_type_hints[key] in [str, List[str]], \
+                    f"Invalid target field type to be translated, the field {key} must be either string or list of string, but got {target_type_hints[key].__name__}"
+
             self.no_translated_code = no_translated_code
             assert max_example_per_thread < large_chunks_threshold, \
                 " Large chunks threshold can't be smaller than max_example per thread!"
