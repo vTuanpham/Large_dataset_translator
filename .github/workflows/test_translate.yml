@@ -28,8 +28,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install -r requirements.txt
-          pip install httpx==1.0.0.beta0 groq==0.9.0 --force-reinstall
+          bash install.sh
         working-directory: ./
 
       - name: Run Unit Tests
