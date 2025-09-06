@@ -1,0 +1,11 @@
+[
+    {
+        "title": String,
+        "category": String,
+        "summary": String,
+        "body": String,
+        "keyphrases": Array of String,
+        "url": String
+    },
+    ...
+]
