@@ -109,13 +109,13 @@ class GoogleProvider(Provider):
         # TypeError likely due to gender-specific translation, which has no fix yet. Please refer to
         # ssut/py-googletrans#260 for more info
         except TypeError as e:
-            print(f"Translation TypeError: {e}")
+            # print(f"Translation TypeError: {e}")
             if data_type == "list": 
                 return [fail_translation_code] * len(input_data)
             return fail_translation_code
             
         except Exception as e:
-            print(f"Translation error: {e}")
+            # print(f"Translation error: {e}")
             if data_type == "list": 
                 return [fail_translation_code] * len(input_data)
             return fail_translation_code
