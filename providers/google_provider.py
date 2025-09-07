@@ -72,15 +72,24 @@ class GoogleProvider(Provider):
         try:
             # Run the translation in the shared event loop
             if data_type == "list":
+                async def retry_translate(text, max_attempts=2):
+                    for attempt in range(max_attempts):
+                        try:
+                            return await self.translator.translate(text, src=src, dest=dest)
+                        except Exception as e:
+                            if attempt < max_attempts - 1:
+                                delay = 0.5 * (2 ** attempt)  # Exponential backoff: 0.5s, 1s, 2s, ...
+                                print(f"Translation attempt {attempt+1} failed, retrying in {delay}s: {e}")
+                                await asyncio.sleep(delay)
+                            else:
+                                print(f"All {max_attempts} translation attempts failed: {e}")
+                                return None
+
                 async def translate_list():
                     results = []
                     for text in input_data:
-                        try:
-                            result = await self.translator.translate(text, src=src, dest=dest)
-                            results.append(result)
-                        except Exception as e:
-                            print(f"Error translating list item: {e}")
-                            results.append(None)
+                        result = await retry_translate(text)
+                        results.append(result)
                     return results
                 
                 if self._loop.is_running():
