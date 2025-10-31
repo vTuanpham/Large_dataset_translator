@@ -7,3 +7,5 @@ python-Levenshtein
 pydantic
 memoization
 tenacity
+groq
+cerebras-cloud-sdk
